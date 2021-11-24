@@ -7,7 +7,9 @@ use crate::Config;
 pub struct Gui {
     pub canvas: WindowCanvas,
     pub events: EventPump,
+    pub counter: u8
 }
+
 
 impl Gui {
     pub fn new(config: &Config) -> Gui {
@@ -29,7 +31,7 @@ impl Gui {
         let mut canvas = window
             .into_canvas()
             .accelerated()
-            .present_vsync()
+            //.present_vsync()
             .build()
             .expect("could not make a canvas");
 
@@ -45,6 +47,7 @@ impl Gui {
             //video: video_subsystem,
             canvas: canvas,
             events: event_pump,
+            counter: 0
         }
     }
 
@@ -64,6 +67,17 @@ impl Gui {
             self.canvas.present();
             true
         }
+    }
+
+    pub fn check_tile(&mut self,x: u8, y: u8, mat: &[[u8; 144]; 160]) -> bool{
+        for i in 0..8 {
+            for j in 0..8 {
+                if mat[((x*8)+i) as usize][(y*8+i) as usize] != 0 {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     pub fn push_matrix(&mut self, mat: &[[u8; 144]; 160], texture: &mut Texture) {
@@ -111,5 +125,24 @@ impl Gui {
         self.canvas
             .copy(&texture, None, None)
             .expect("Couldn't copy texture on canvas");
+
+        self.counter += 1;
+        if self.counter == 10{
+            self.counter = 0;
+            print!("\x1B[2J\x1B[1;1H");
+            for i in 0..18{
+                for j in 2..13{
+                    if self.check_tile(j,i,&mat) {
+                        print!(" ");
+                    }else{
+                        print!("█");
+                    }
+                }
+                println!("");
+            }
+            println!("");
+        }
+
+
     }
 }
