@@ -28,7 +28,7 @@ impl Ia {
                 import random
 
                 epsilon = 0.2
-                possible_action = [up,down,right,left,a,b]
+                possible_action = [down,right,left,a,b]
 
                 if random.uniform(0, 1) < epsilon:
                     random.shuffle(possible_action)
