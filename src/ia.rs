@@ -5,6 +5,40 @@ use pyo3::types::PyTuple;
 pub struct Ia{}
 
 impl Ia {
+
+    fn makeAction(action){
+        match action{
+            0=>println("b");
+            1=>println("down");
+            2=>println("right");
+            3=>println("left");
+            4=>println("a");
+        }
+    }
+
+    fn makeQ(state, action){
+        let alpha = 0.3;
+        let gamma = 0.9;
+        makeAction(action);
+        //todo implement Q[formula] and write in .txt
+    }
+
+    fn eGreedy(){
+        state=0;
+        //todo find state
+        let epsilon = 20;
+        let num: rand = task_rng().gen_range(0, 100);
+
+        if epsilon < rand{
+            rand = task_rng().gen_range(0, 4);
+            makeQ(state,rand);
+        }else{
+            //check in list
+            makeQ(state,rand);
+        }
+
+    }
+    /*this was useless shittty python just here to remenber the code
     pub fn hellow_world() -> PyResult<()> {
         Python::with_gil(|py| {
             let fun: Py<PyAny> = PyModule::from_code(
@@ -56,5 +90,5 @@ impl Ia {
             fun.call1(py, args)?;
             Ok(())
         })
-    }
+    }*/
 }
