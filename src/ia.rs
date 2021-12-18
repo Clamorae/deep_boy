@@ -24,3 +24,21 @@ fn find_best_place(/* tetromino et sol*/){
     }
     /*call action*/
 }
+
+fn genetic(){
+    /*
+    Generate the initial population
+    Compute fitness
+        launch ten game and get stats foreach
+    REPEAT
+        Selection
+            keep how many participant?
+        Crossover
+            try try with crossover and mean value
+        Mutation
+            how to adapt?
+        Compute fitness
+            launch ten game and get stats foreach
+    UNTIL population has converged
+    */
+}
