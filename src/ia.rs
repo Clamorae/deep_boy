@@ -4,8 +4,12 @@ use pyo3::types::PyTuple;
 
 pub struct Ia{}
 
-fn calcul_best_place(/*matrix,w1,w2,w3,w4*/){
-    /*gaps = number of gap, height_mean = mean of the heigths, max_diff diff between highest and lowest, max_side_diff = max dif between two side raw*/
+/*This function will take a position and then compute a score. Lower is the score better is the position.*/
+fn compute_best_place(/*matrix,w1,w2,w3,w4*/){
+    /*gaps = number of gap
+    height_mean = mean of the heigths
+    max_diff diff between highest and lowest
+    max_side_diff = max dif between two side raw*/
     let gaps = 0, height_mean = 0, min_height = 15, max_height = 0,max_side_diff;
     let col_heigths =[0,0,0,0,0,0,0,0,0,0];
     for collumn in range 0..9{
@@ -35,16 +39,18 @@ fn calcul_best_place(/*matrix,w1,w2,w3,w4*/){
     score=gaps*w1+height_mean*w2+max_diff*w3+max_side_diff*w4;
 }
 
+/*this function will check for each possiblr position of the tetromino which one is the better.
+Then it will call function to move the piece to the right place*/
 fn find_best_place(/* tetromino et sol*/){
     let score = 0;
     let best_score = 0;
     let pose = [0,0];
-    for raw in range 0..9{
+    for col in range 0..9{
         for rotate in range 0..3{
-            score = calcul_best_place(raw,rotate);
+            score = compute_best_place(col,rotate);
             if score > best_score{
                 best_score = score;
-                pose[0] = raw;
+                pose[0] = col;
                 pose[1] = rotate;
             }
         }
