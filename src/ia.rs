@@ -4,8 +4,35 @@ use pyo3::types::PyTuple;
 
 pub struct Ia{}
 
-fn calcul_best_place(u8 raw, u8 rotate){
-    /*score=c1*w1+c2*w2...*/
+fn calcul_best_place(/*matrix,w1,w2,w3,w4*/){
+    /*gaps = number of gap, height_mean = mean of the heigths, max_diff diff between highest and lowest, max_side_diff = max dif between two side raw*/
+    let gaps = 0, height_mean = 0, min_height = 15, max_height = 0,max_side_diff;
+    let col_heigths =[0,0,0,0,0,0,0,0,0,0];
+    for collumn in range 0..9{
+        for raw in range 0..15{
+            if matrix[raw][collumn]==0 && col_heigths[collumn]!=0{
+                gaps+=1;
+            }else if matrix[raw][collumn]==1 && col_heigths[collumn]==0{
+                col_heigths[collumn]=(15-raw);
+                height_mean+=(15-raw);
+            }
+        }
+        if min_height > col_heigths[collumn]{
+            min_height=col_heigths[collumn];
+        }
+        if max_height > col_heigths[collumn]{
+            max_height=col_heigths[collumn];
+        }
+        if collumn >=1{
+            if value.abs(col_heigths[collumn-1]-col_heigths[collumn])>max_side_diff{
+                max_side_diff=value.abs(col_heigths[collumn-1]-col_heigths[collumn]);
+            }
+        }
+    }
+    height_mean = height_mean/10;
+    let max_diff = max_height - min_height; 
+
+    score=gaps*w1+height_mean*w2+max_diff*w3+max_side_diff*w4;
 }
 
 fn find_best_place(/* tetromino et sol*/){

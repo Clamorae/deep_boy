@@ -16,7 +16,7 @@ use sdl2::gfx::framerate::FPSManager;
 use sdl2::pixels::PixelFormatEnum;
 use std::cmp;
 use std::path::Path;
-use crate::ia::Ia;
+//use crate::ia::Ia;
 
 #[macro_use]
 extern crate clap;
@@ -153,7 +153,7 @@ fn main() {
 
     while window.update() {
         window.clear();
-        Ia::hellow_world();
+        //Ia::hellow_world();
         controls.get_keyboard(&config, &mut cpu, &mut mem, &mut window);
         controls.update_ram(&mut mem);
         window.push_matrix(&gpu.screen, &mut texture);
