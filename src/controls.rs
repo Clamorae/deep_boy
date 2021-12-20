@@ -77,6 +77,17 @@ impl Controls {
         }
     }
 
+    pub fn add_controls(&mut self, ctrl: Controls) {
+        self.up = self.up & ctrl.up;
+        self.down = self.down & ctrl.down;
+        self.left = self.left & ctrl.left;
+        self.right = self.right & ctrl.right;
+        self.a = self.a & ctrl.a;
+        self.b = self.b & ctrl.b;
+        self.select = self.select & ctrl.select;
+        self.start = self.start & ctrl.start;
+    }
+
     pub fn update_ram(&self, mem: &mut Memory) {
         let mut n = mem.read(0xff00);
         if n & 0b00100000 > 0 {

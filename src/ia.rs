@@ -1,4 +1,5 @@
 use crate::memory::Memory;
+use crate::controls::Controls;
 
 pub struct Ia{
     pub mat :[[bool; 10]; 18],
@@ -54,7 +55,7 @@ impl Ia{
     }
 
     pub fn get_next_tet(&mut self, mem: &mut Memory){
-        match mem.read(0xC213){
+        match mem.read(0xC203){
             12 => self.tet = PieceType::O,
             24 => self.tet = PieceType::T,
             20 => self.tet = PieceType::S,
@@ -68,7 +69,7 @@ impl Ia{
     }
 
     pub fn print_tet(&self){
-        print!("Next tet: ");
+        print!("Current tet: ");
         match self.tet {
             PieceType::O => println!("O"),
             PieceType::T => println!("T"),
@@ -78,6 +79,19 @@ impl Ia{
             PieceType::I => println!("I"),
             PieceType::Z => println!("Z"),
             PieceType::None => println!("None"),
+        }
+    }
+
+    pub fn get_inputs(&mut self) -> Controls {
+        Controls{
+            up: 1,
+            down: 1,
+            left: 1,
+            right: 1,
+            a: 1,
+            b: 1,
+            select: 1,
+            start: 1,
         }
     }
 

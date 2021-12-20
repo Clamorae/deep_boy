@@ -167,9 +167,10 @@ fn main() {
         ia.print_field();
         ia.get_next_tet(&mut mem);
         ia.print_tet();
-        controls.get_keyboard(&config, &mut cpu, &mut mem, &mut window);
-        controls.update_ram(&mut mem);
 
+        controls.get_keyboard(&config, &mut cpu, &mut mem, &mut window);
+        controls.add_controls(ia.get_inputs());
+        controls.update_ram(&mut mem);
 
         window.push_matrix(&gpu.screen, &mut texture);
         master.screen(&mut cpu, &mut gpu, &mut timer, &mut controls, &mut mem);
