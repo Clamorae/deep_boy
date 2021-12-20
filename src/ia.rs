@@ -5,6 +5,8 @@ pub struct Ia{
     pub mat :[[bool; 10]; 18],
     pub old_mat : [[bool; 10]; 18],
     pub tet : PieceType,
+    pub inputs : [Input; 8], //TODO Check le nombre max de coup ?
+    pub input_iterator : u8
     //child : [u8; 4]
     //Jeux de coup ?
     //Je commente car flemme
@@ -24,7 +26,8 @@ pub enum PieceType{
 pub enum Input{
     Left,
     Right,
-    A
+    A,
+    None
 }
 
 //tile: 47
@@ -33,6 +36,7 @@ pub enum Input{
 //+0x20 pour l'axe y
 impl Ia{
 
+    /*Generate the matrix containing already set tetriminos*/
     pub fn get_field(&mut self, mem: &mut Memory){
         self.old_mat = self.mat;
 
@@ -89,17 +93,83 @@ impl Ia{
     }
 
     pub fn get_inputs(&mut self) -> Controls {
-        Controls{
-            up: 1,
-            down: 1,
-            left: 1,
-            right: 1,
-            a: 1,
-            b: 1,
-            select: 1,
-            start: 1,
+        let mut temp: Controls;
+        match self.inputs[self.input_iterator] {
+            Left => {
+                self.ready_next_move();
+                temp = Controls {
+                    up: 1,
+                    down: 1,
+                    left: 0,
+                    right: 1,
+                    a: 1,
+                    b: 1,
+                    select: 1,
+                    start: 1,
+                }
+            },
+            Right => {
+                self.ready_next_move();
+                temp = Controls {
+                    up: 1,
+                    down: 1,
+                    left: 1,
+                    right: 0,
+                    a: 1,
+                    b: 1,
+                    select: 1,
+                    start: 1,
+                }
+            },
+            A => {
+                self.ready_next_move();
+                temp = Controls {
+                    up: 1,
+                    down: 1,
+                    left: 1,
+                    right: 1,
+                    a: 0,
+                    b: 1,
+                    select: 1,
+                    start: 1,
+                }
+            },
+            None => {
+                self.ready_next_move();
+                temp = Controls { //TODO METTRE EN DOWN ?
+                    up: 1,
+                    down: 0,
+                    left: 1,
+                    right: 1,
+                    a: 1,
+                    b: 1,
+                    select: 1,
+                    start: 1,
+                }
+            },
+        }
+        return temp;
+    }
+
+    /*Lunched at each new screen, this function will act as the routine for our Ia*/
+    pub fn process_screen(&mut self, mem: &mut Memory) {
+        self.get_field(mem); //Generating the new screen
+        if self.mat =! self.old_mat {
+            //Calculate the new list of inpu for the new piece
+            self.input_iterator = 0 //Reseting the parsing of inputs
         }
     }
+
+    pub fn ready_next_move(&mut self) {
+        if self.input_iterator == 7{
+            self.input_iterator = 0
+        }else{
+            self.input_iterator += 1;
+        }
+    }
+
+
+
 
 }
 
