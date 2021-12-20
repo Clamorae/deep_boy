@@ -21,6 +21,12 @@ pub enum PieceType{
     None,
 }
 
+pub enum Input{
+    Left,
+    Right,
+    A
+}
+
 //tile: 47
 //9802
 //+0x1 pour l'axe x
