@@ -104,7 +104,7 @@ impl Ia{
 }
 
 
-/*
+
 /*This function will take a position and then compute a score. Lower is the score better is the position.*/
 //TODO Make a enum for rotate ?
 fn compute_best_place(matrix : &[[bool; 144]; 160],col : u8, rotate : u8, ) -> u8{
@@ -144,6 +144,21 @@ fn compute_best_place(matrix : &[[bool; 144]; 160],col : u8, rotate : u8, ) -> u
 /*this function will check for each possible position of the tetromino which one is the better.
 Then it will call function to move the piece to the right place*/
 fn find_best_place(mat : &[[bool; 144]; 160], piece : &piece) -> [Input] {
+    /*This is a matrix storing array, in each array the down side of a piece is represented
+    0 is the lowest point on the piece, 15 is an empty line, 
+    1 and 2 are the difference between this place of the piece and the lowest level of the piece
+    the first array in each line represent the base piece shape
+    each other array in line represent the base piece shape ater a counterclockwise rotation 
+    */
+    let tet_patern = [
+                        [[15,0,0,15],[15,0,0,15],[15,0,0,15],[15,0,0,15]],//o
+                        [[1,0,1,15],[15,0,1,15],[0,0,0,15],[15,1,0,15]],//t
+                        [[0,0,1,15],[15,1,0,15],[0,0,1,15],[15,1,0,15]],//s
+                        [[0,0,0,15],[15,2,0,15],[0,1,1,15],[15,0,0,15]],//l
+                        [[0,0,0,15],[15,0,0,15],[1,1,0,15],[15,0,2,15]],//j
+                        [[0,0,0,0],[15,0,15,15],[0,0,0,0],[15,0,15,15]],//i
+                        [[1,0,0,15],[15,0,1,15],[1,0,0,15],[15,0,1,15]]//z
+                        ]
     let mut score :u8 = 0;
     let mut best_score = 0;
     let mut pose = [0,0];
