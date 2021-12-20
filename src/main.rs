@@ -16,7 +16,7 @@ use sdl2::gfx::framerate::FPSManager;
 use sdl2::pixels::PixelFormatEnum;
 use std::cmp;
 use std::path::Path;
-use crate::ia::Ia;
+use crate::ia::{Ia, Input};
 use crate::ia::PieceType;
 
 #[macro_use]
@@ -155,6 +155,8 @@ fn main() {
         mat: [[false; 10]; 18],
         old_mat: [[false; 10]; 18],
         tet: PieceType::None,
+        inputs : [Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,Input::None],
+        input_iterator : 0
     };
 
 

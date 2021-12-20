@@ -91,11 +91,20 @@ impl Ia{
             PieceType::None => println!("None"),
         }
     }
-
     pub fn get_inputs(&mut self) -> Controls {
-        let mut temp: Controls;
-        match self.inputs[self.input_iterator] {
-            Left => {
+        let mut temp: Controls = Controls {
+            up: 1,
+            down: 1,
+            left: 1,
+            right: 1,
+            a: 1,
+            b: 1,
+            select: 1,
+            start: 1
+        };
+        match self.inputs[self.input_iterator as usize] {
+            Input::Left => {
+                self.inputs[self.input_iterator as usize] = Input::None;
                 self.ready_next_move();
                 temp = Controls {
                     up: 1,
@@ -108,7 +117,8 @@ impl Ia{
                     start: 1,
                 }
             },
-            Right => {
+            Input::Right => {
+                self.inputs[self.input_iterator as usize] = Input::None;
                 self.ready_next_move();
                 temp = Controls {
                     up: 1,
@@ -121,7 +131,8 @@ impl Ia{
                     start: 1,
                 }
             },
-            A => {
+            Input::A => {
+                self.inputs[self.input_iterator as usize] = Input::None;
                 self.ready_next_move();
                 temp = Controls {
                     up: 1,
@@ -134,7 +145,7 @@ impl Ia{
                     start: 1,
                 }
             },
-            None => {
+            Input::None => {
                 self.ready_next_move();
                 temp = Controls { //TODO METTRE EN DOWN ?
                     up: 1,
@@ -154,7 +165,7 @@ impl Ia{
     /*Lunched at each new screen, this function will act as the routine for our Ia*/
     pub fn process_screen(&mut self, mem: &mut Memory) {
         self.get_field(mem); //Generating the new screen
-        if self.mat =! self.old_mat {
+        if self.mat != self.old_mat {
             //Calculate the new list of inpu for the new piece
             self.input_iterator = 0 //Reseting the parsing of inputs
         }
