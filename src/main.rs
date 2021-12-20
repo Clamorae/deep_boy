@@ -17,6 +17,7 @@ use sdl2::pixels::PixelFormatEnum;
 use std::cmp;
 use std::path::Path;
 use crate::ia::Ia;
+use crate::ia::PieceType;
 
 #[macro_use]
 extern crate clap;
@@ -150,12 +151,26 @@ fn main() {
             .expect("Couldn't set framerate");
     }
 
+    let mut ia = ia::Ia {
+        mat: [[false; 10]; 18],
+        old_mat: [[false; 10]; 18],
+        tet: PieceType::None,
+    };
+
 
     while window.update() {
         window.clear();
-        Ia::hellow_world();
+
+        print!("\x1B[2J\x1B[1;1H");
+
+        ia.get_field(&mut mem);
+        ia.print_field();
+        ia.get_next_tet(&mut mem);
+        ia.print_tet();
         controls.get_keyboard(&config, &mut cpu, &mut mem, &mut window);
         controls.update_ram(&mut mem);
+
+
         window.push_matrix(&gpu.screen, &mut texture);
         master.screen(&mut cpu, &mut gpu, &mut timer, &mut controls, &mut mem);
         //println!("frame");

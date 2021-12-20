@@ -126,23 +126,5 @@ impl Gui {
             .copy(&texture, None, None)
             .expect("Couldn't copy texture on canvas");
 
-        self.counter += 1;
-        if self.counter == 10{
-            self.counter = 0;
-            print!("\x1B[2J\x1B[1;1H");
-            for i in 0..18{
-                for j in 2..13{
-                    if self.check_tile(j,i,&mat) {
-                        print!(" ");
-                    }else{
-                        print!("█");
-                    }
-                }
-                println!("");
-            }
-            println!("");
-        }
-
-
     }
 }

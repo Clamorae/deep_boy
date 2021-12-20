@@ -1,10 +1,12 @@
+use crate::memory::Memory;
 
 pub struct Ia{
-    mat :[[bool; 144]; 160],
-    piece : PieceType,
-    child : [u8; 4]
+    pub mat :[[bool; 10]; 18],
+    pub old_mat : [[bool; 10]; 18],
+    pub tet : PieceType,
+    //child : [u8; 4]
     //Jeux de coup ?
-    //
+    //Je commente car flemme
 }
 
 pub enum PieceType{
@@ -15,8 +17,74 @@ pub enum PieceType{
     S,
     Z,
     T,
+    None,
 }
 
+//tile: 47
+//9802
+//+0x1 pour l'axe x
+//+0x20 pour l'axe y
+impl Ia{
+
+    pub fn get_field(&mut self, mem: &mut Memory){
+        self.old_mat = self.mat;
+
+        for i in 0..18 {
+            for j in 0..10{
+                self.mat[i][j] = (mem.read((0x9802+(i*0x20)+j) as u16)) != 47;
+            }
+        }
+    }
+
+    pub fn print_field(&mut self){
+        println!("┌──────────┐");
+        for i in 0..18{
+            print!("|");
+            for j in 0..10{
+                if self.mat[i][j] {
+                    print!("█");
+                }else{
+                    print!(" ");
+                }
+            }
+            print!("|");
+            println!("");
+        }
+        println!("└──────────┘");
+    }
+
+    pub fn get_next_tet(&mut self, mem: &mut Memory){
+        match mem.read(0xC213){
+            12 => self.tet = PieceType::O,
+            24 => self.tet = PieceType::T,
+            20 => self.tet = PieceType::S,
+            4 => self.tet = PieceType::J,
+            0 => self.tet = PieceType::L,
+            8 => self.tet = PieceType::I,
+            16 => self.tet = PieceType::Z,
+            _ => self.tet = PieceType::None,
+
+        }
+    }
+
+    pub fn print_tet(&self){
+        print!("Next tet: ");
+        match self.tet {
+            PieceType::O => println!("O"),
+            PieceType::T => println!("T"),
+            PieceType::S => println!("S"),
+            PieceType::L => println!("L"),
+            PieceType::J => println!("J"),
+            PieceType::I => println!("I"),
+            PieceType::Z => println!("Z"),
+            PieceType::None => println!("None"),
+        }
+    }
+
+}
+
+
+/*
 /*This function will take a position and then compute a score. Lower is the score better is the position.*/
 //TODO Make a enum for rotate ?
 fn compute_best_place(matrix : &[[bool; 144]; 160],col : u8, rotate : u8, ) -> u8{
@@ -89,3 +157,4 @@ fn genetic(){
     UNTIL population has converged
     */
 }
+*/
