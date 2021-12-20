@@ -92,15 +92,15 @@ fn compute_best_place(matrix : &[[bool; 144]; 160],col : u8, rotate : u8, ) -> u
     height_mean = mean of the heigths
     max_diff diff between highest and lowest
     max_side_diff = max dif between two side raw*/
-    let mut gaps = 0; height_mean = 0; min_height = 15; max_height = 0; max_side_diff;
+    let mut gaps = 0; height_mean = 0; min_height = 18; max_height = 0; max_side_diff = 0;
     let mut col_heigth =[0,0,0,0,0,0,0,0,0,0];
     for column in 0..9{
-        for raw in ra0..15{
+        for raw in 0..18{
             if matrix[raw][column]== false && col_heigth[column]!=0{
                 gaps+=1;
             }else if matrix[raw][column]== true && col_heigth[column]==0{
-                col_heigth[column]=(15-raw);
-                height_mean+=(15-raw);
+                col_heigth[column]=(18-raw);
+                height_mean+=(18-raw);
             }
         }
         if min_height > col_heigth[column]{
@@ -121,7 +121,7 @@ fn compute_best_place(matrix : &[[bool; 144]; 160],col : u8, rotate : u8, ) -> u
     score=gaps*w1+height_mean*w2+max_diff*w3+max_side_diff*w4;
 }
 
-/*this function will check for each possiblr position of the tetromino which one is the better.
+/*this function will check for each possible position of the tetromino which one is the better.
 Then it will call function to move the piece to the right place*/
 fn find_best_place(mat : &[[bool; 144]; 160], piece : &piece){
     let mut score :u8 = 0;
@@ -129,6 +129,7 @@ fn find_best_place(mat : &[[bool; 144]; 160], piece : &piece){
     let mut pose = [0,0];
     for col in 0..9{
         for rotate in  0..3{
+            //create matrix with the tet
             score = compute_best_place(mat,col,rotate);
             if score > best_score{
                 best_score = score;
@@ -137,10 +138,27 @@ fn find_best_place(mat : &[[bool; 144]; 160], piece : &piece){
             }
         }
     }
-    /*call action*/
+    pose[0] = pose[0] - 4;
+    if pose[0] > 0 {
+        for i in range 0..pose[0]{
+            //move right
+            //wait 2 frame
+        }
+    }else if pose[0]<0{
+        for i in range 0..value.abs(pose[0]){
+            //move left
+            //wait 2 frame
+        }
+    }
+    for i in range 0..rotate{
+        //press a
+        //wait 2 frame
+    }
+    //go dooooooooooooooooooooooooooooooooooooooooooown
+
 }
 
-fn genetic(){
+/*fn genetic(){
     /*
     Generate the initial population
     Compute fitness
@@ -156,5 +174,5 @@ fn genetic(){
             launch ten game and get stats foreach
     UNTIL population has converged
     */
-}
+}*/
 */
