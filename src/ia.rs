@@ -98,7 +98,7 @@ impl Ia{
 }
 
 
-/*
+
 /*This function will take a position and then compute a score. Lower is the score better is the position.*/
 //TODO Make a enum for rotate ?
 fn compute_best_place(matrix : &[[bool; 144]; 160],col : u8, rotate : u8, ) -> u8{
@@ -137,7 +137,7 @@ fn compute_best_place(matrix : &[[bool; 144]; 160],col : u8, rotate : u8, ) -> u
 
 /*this function will check for each possible position of the tetromino which one is the better.
 Then it will call function to move the piece to the right place*/
-fn find_best_place(mat : &[[bool; 144]; 160], piece : &piece){
+fn find_best_place(mat : &[[bool; 144]; 160], piece : &piece) -> {
     let mut score :u8 = 0;
     let mut best_score = 0;
     let mut pose = [0,0];
@@ -152,24 +152,25 @@ fn find_best_place(mat : &[[bool; 144]; 160], piece : &piece){
             }
         }
     }
+    let mut future_inputs[pose[0]+pose[1]];
+    let mut index = 0;
     pose[0] = pose[0] - 4;
     if pose[0] > 0 {
         for i in range 0..pose[0]{
-            //move right
-            //wait 2 frame
+            future_inputs[index] = "right";
+            i+=1
         }
     }else if pose[0]<0{
         for i in range 0..value.abs(pose[0]){
-            //move left
-            //wait 2 frame
+            future_inputs[index] = "left";
+            i+=1
         }
     }
     for i in range 0..rotate{
-        //press a
-        //wait 2 frame
+        future_inputs[index] = "a";
+            i+=1
     }
-    //go dooooooooooooooooooooooooooooooooooooooooooown
-
+ Return future_inputs;
 }
 
 /*fn genetic(){
