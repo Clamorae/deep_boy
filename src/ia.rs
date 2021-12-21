@@ -65,14 +65,14 @@ impl Ia{
 
     pub fn get_pattern (&self) -> [Vec<u8>;4]{
         match self.tet {
-            PieceType::O => [vec![0; 2];4],
+            PieceType::O => [vec![0; 2],vec![0; 2],vec![0; 2],vec![0; 2]],
             PieceType::T => [vec![1,0,1],vec![0,1],vec![0; 3],vec![1,0]],
             PieceType::S => [vec![0,0,1],vec![1,0],vec![0,0,1],vec![1,0]],
             PieceType::L => [vec![0,0,0],vec![2,0],vec![0,1,1],vec![0,0]],
             PieceType::J => [vec![0,0,0],vec![0,0],vec![1,1,0],vec![0,2]],
             PieceType::I => [vec![0,0,0,0],vec![0],vec![0,0,0,0],vec![0]],
             PieceType::Z => [vec![1,0,0],vec![0,1],vec![1,0,0],vec![0,1]],
-            _ => { [vec![0; 2];4]} //Never gonna happend but meh
+            _ => { [vec![0; 2],vec![0; 2],vec![0; 2],vec![0; 2]]} //Never gonna happend but meh
         }
     }
 
@@ -275,14 +275,14 @@ impl Ia{
         let mut best_score = 0;
         let mut pose : [i8;2] = [0,0];
         let mut piece_shape : Vec<u8>;
-        let mut new_mat;
+        let mut new_mat : [[bool; 10]; 18];
         let mut is_placed;
         let mut heigth;
 
         for col in 0..9{
             for rotate in  0..3{
-                piece_shape = tet_pattern[rotate];
-                new_mat = mat;
+                piece_shape = tet_pattern[rotate].clone();
+                new_mat = *mat;
                 is_placed = 0;
                 heigth = 15;
                 if piece_shape.len()+col<9{
@@ -306,6 +306,7 @@ impl Ia{
                                             2 => new_mat[col+1][heigth-1] = true,
                                             3 => {new_mat[col+1][heigth-1] = true;
                                                 new_mat[col+1][heigth-2] = true;}
+                                            _ => {},
                                         }
                                     }
                                     PieceType::S => {
@@ -352,7 +353,8 @@ impl Ia{
                                         }else{
                                             new_mat[col+1][heigth-1] = true;
                                         }
-                                    }
+                                    },
+                                    PieceType::None => {}
                                 }
                             }else{
                                 heigth +=1;
@@ -360,7 +362,7 @@ impl Ia{
                         }
                     }
                 }
-                score = Ia::compute_best_place(new_mat,);
+                score = Ia::compute_best_place(&new_mat);
                 if score > best_score{
                     best_score = score;
                     pose[0] = col as i8;
@@ -413,4 +415,3 @@ impl Ia{
     UNTIL population has converged
     */
 }*/
-

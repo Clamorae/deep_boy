@@ -88,6 +88,7 @@ impl Controls {
         self.start = self.start & ctrl.start;
     }
 
+
     pub fn update_ram(&self, mem: &mut Memory) {
         let mut n = mem.read(0xff00);
         if n & 0b00100000 > 0 {
