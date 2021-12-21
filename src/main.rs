@@ -159,17 +159,17 @@ fn main() {
         input_iterator : 0
     };
 
-
+    crate::file_io::load_savestate(&config, &mut cpu, &mut mem.ram);
     while window.update() {
         window.clear();
 
         print!("\x1B[2J\x1B[1;1H");
 
-        ia.get_field(&mut mem);
+        /*ia.get_field(&mut mem);
         ia.print_field();
         ia.get_next_tet(&mut mem);
-        ia.print_tet();
-
+        ia.print_tet();*/
+        ia.process_screen(&mut mem);
         controls.get_keyboard(&config, &mut cpu, &mut mem, &mut window);
         controls.add_controls(ia.get_inputs());
         controls.update_ram(&mut mem);

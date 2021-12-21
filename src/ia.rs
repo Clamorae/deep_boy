@@ -190,7 +190,7 @@ impl Ia{
                 self.ready_next_move();
                 temp = Controls { //TODO METTRE EN DOWN ?
                     up: 1,
-                    down: 0,
+                    down: 1,
                     left: 1,
                     right: 1,
                     a: 1,
@@ -206,8 +206,10 @@ impl Ia{
     /*Lunched at each new screen, this function will act as the routine for our Ia*/
     pub fn process_screen(&mut self, mem: &mut Memory) {
         self.get_field(mem); //Generating the new screen
+        self.get_next_tet(mem);
         if self.mat != self.old_mat {
-            //Calculate the new list of inpu for the new piece
+            print!("Hewo bebou");
+            self.inputs = self.find_best_place();
             self.input_iterator = 0 //Reseting the parsing of inputs
         }
     }
@@ -240,6 +242,7 @@ impl Ia{
                     gaps+=1;
                 }else if matrix[raw][column]== true && col_height[column]==0{
                     col_height[column]= (18 - raw) as i8;
+                    //println!("{} {}",height_mean,raw);
                     height_mean+=(18-raw) as i8;
                 }
             }
@@ -263,7 +266,7 @@ impl Ia{
 
     /*this function will check for each possible position of the tetromino which one is the better.
     Then it will call function to move the piece to the right place*/
-    fn find_best_place(&mut self, mat : &[[bool; 10]; 18]) -> [Input; 8] {
+    fn find_best_place(&mut self) -> [Input; 8] {
         /*This is a matrix storing array, in each array the down side of a piece is represented
         0 is the lowest point on the piece, 15 is an empty line,
         1 and 2 are the difference between this place of the piece and the lowest level of the piece
@@ -277,81 +280,87 @@ impl Ia{
         let mut piece_shape : Vec<u8>;
         let mut new_mat : [[bool; 10]; 18];
         let mut is_placed;
-        let mut heigth;
+        let mut heigth : usize;
 
         for col in 0..9{
             for rotate in  0..3{
                 piece_shape = tet_pattern[rotate].clone();
-                new_mat = *mat;
+                new_mat = self.mat;
                 is_placed = 0;
-                heigth = 15;
+                heigth = 0;
                 if piece_shape.len()+col<9{
                     while is_placed == 0{
                         for i  in 0..piece_shape.len(){
-                            if new_mat[col+i as usize][heigth+1-piece_shape[i] as usize]{
+                            println!("Piece shape {}",piece_shape.len());
+                            println!("i {}",i);
+                            println!("End me please {}",heigth+1-piece_shape[i] as usize);
+                        if heigth+1 - piece_shape[i] == 18 {
+
+                        }
+                            if new_mat[heigth+1-piece_shape[i] as usize][col+i as usize]{
                                 is_placed = 1;
                                 for i in 0..piece_shape.len(){
-                                    new_mat[col+i as usize][heigth-piece_shape[i] as usize] = true;
+                                    new_mat[heigth-piece_shape[i] as usize][col+i as usize] = true;
                                 }
                                 match self.tet {
                                     PieceType::O => {
-                                        new_mat[col as usize][heigth-1 as usize] = true;
-                                        new_mat[col+1 as usize][heigth-1 as usize] = true;
+                                        new_mat[heigth-1 as usize][col as usize] = true;
+                                        new_mat[heigth-1 as usize][col+1 as usize] = true;
                                     },
                                     PieceType::T => {
                                         match rotate{
-                                            0 => new_mat[col+1][heigth-1] = true,
-                                            1 => {new_mat[col][heigth-1] = true;
-                                                new_mat[col][heigth-2] = true;},
-                                            2 => new_mat[col+1][heigth-1] = true,
-                                            3 => {new_mat[col+1][heigth-1] = true;
-                                                new_mat[col+1][heigth-2] = true;}
+                                            0 => new_mat[heigth-1][col+1] = true,
+                                            1 => {new_mat[heigth-1][col] = true;
+                                                new_mat[heigth-2][col] = true;},
+                                            2 => new_mat[heigth-1][col+1] = true,
+                                            3 => {new_mat[heigth-1][col+1] = true;
+                                                new_mat[heigth-2][col+1] = true;}
                                             _ => {},
                                         }
                                     }
                                     PieceType::S => {
                                         if rotate==0 || rotate==2{
-                                            new_mat[col][heigth-2] = true;
-                                            new_mat[col+1][heigth-1] = true;
+                                            new_mat[heigth-2][col] = true;
+                                            new_mat[heigth-1][col+1] = true;
                                         }else{
-                                            new_mat[col+1][heigth-1] = true;
+                                            new_mat[heigth-1][col+1] = true;
                                         }
                                     },
                                     PieceType::L => {
                                         match rotate{
-                                            0 => new_mat[col+2][heigth-1] = true,
-                                            1 => {new_mat[col+1][heigth-1] = true;
-                                                new_mat[col+1][heigth-2] = true;},
-                                            2 => new_mat[col][heigth-1] = true,
-                                            3 => {new_mat[col][heigth-1] = true;
-                                                new_mat[col][heigth-2] = true;},
+                                            0 => new_mat[heigth-1][col+2] = true,
+                                            1 => {new_mat[heigth-1][col+1] = true;
+                                                new_mat[heigth-2][col+1] = true;},
+                                            2 => new_mat[heigth-1][col] = true,
+                                            3 => {new_mat[heigth-1][col] = true;
+                                                new_mat[heigth-2][col] = true;},
                                             _ => ()
                                         }
                                     }
                                     PieceType::J => {
                                         match rotate{
-                                            0 => new_mat[col][heigth-1] = true,
-                                            1 => {new_mat[col+1][heigth-1] = true;
-                                                new_mat[col+1][heigth-2] = true;},
-                                            2 => new_mat[col+2][heigth-1] = true,
-                                            3 => {new_mat[col][heigth-1] = true;
-                                                new_mat[col][heigth-2] = true;},
+                                            0 => new_mat[heigth-1][col] = true,
+                                            1 => {new_mat[heigth-1][col+1] = true;
+                                                new_mat[heigth-2][col+1] = true;},
+                                            2 => new_mat[heigth-1][col+2] = true,
+                                            3 => {new_mat[heigth-1][col] = true;
+                                                new_mat[heigth-2][col] = true;},
                                             _ => ()
                                         }
                                     }
                                     PieceType::I => {
                                         if rotate==1 || rotate==3{
-                                            new_mat[col][heigth-1] = true;
+                                            new_mat[heigth-1][col] = true;
                                             new_mat[col][heigth-2] = true;
                                             new_mat[col][heigth-3] = true;
                                         }
                                     },
                                     PieceType::Z => {
                                         if rotate==0 || rotate== 2{
-                                            new_mat[col][heigth-1] = true;
-                                            new_mat[col+1][heigth-2] = true;
+                                            new_mat[heigth-1][col] = true;
+                                            new_mat[heigth-2][col+1] = true;
                                         }else{
-                                            new_mat[col+1][heigth-1] = true;
+                                            new_mat[heigth-1][col+1] = true;
                                         }
                                     },
                                     PieceType::None => {}
