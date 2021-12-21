@@ -56,11 +56,12 @@ pub enum TetPattern { //Plz end me
 //+0x20 pour l'axe y
 
 
-fn default_inputs() -> [Input;8]{
-    [Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,Input::None]
-}
 
 impl Ia{
+
+    pub fn default_inputs() -> [Input;8]{
+        [Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,Input::None]
+    }
 
     pub fn get_pattern (&self) -> [Vec<u8>;4]{
         match self.tet {
@@ -222,24 +223,24 @@ impl Ia{
 
     /*This function will take a position and then compute a score. Lower is the score better is the position.*/
     //TODO Make a enum for rotate ?
-    fn compute_best_place(matrix : &[[bool; 10]; 18],col : u8) -> u8{
+    fn compute_best_place(matrix : &[[bool; 10]; 18]) -> u8{
         /*gaps = number of gap
         height_mean = mean of the heigths
         max_diff diff between highest and lowest
         max_side_diff = max dif between two side raw*/
         let mut gaps = 0;
-        let mut height_mean = 0;
-        let mut min_height = 18;
-        let mut max_height = 0;
-        let mut max_side_diff = 0;
-        let mut col_height =[0,0,0,0,0,0,0,0,0,0];
+        let mut height_mean :i8 = 0;
+        let mut min_height :i8 = 18;
+        let mut max_height:i8 = 0;
+        let mut max_side_diff:i8 = 0;
+        let mut col_height:[i8;10] =[0,0,0,0,0,0,0,0,0,0];
         for column in 0..9{
             for raw in 0..18{
                 if matrix[raw][column]== false && col_height[column]!=0{
                     gaps+=1;
                 }else if matrix[raw][column]== true && col_height[column]==0{
-                    col_height[column]=(18-raw);
-                    height_mean+=(18-raw);
+                    col_height[column]= (18 - raw) as i8;
+                    height_mean+=(18-raw) as i8;
                 }
             }
             if min_height > col_height[column]{
@@ -250,7 +251,7 @@ impl Ia{
             }
             if column >=1{
                 if (col_height[column -1]- col_height[column]).abs() >max_side_diff{
-                    max_side_diff=(col_height[column -1]- col_height[column]).abs();
+                    max_side_diff =(col_height[column -1]- col_height[column]).abs();
                 }
             }
         }
@@ -272,8 +273,8 @@ impl Ia{
         let mut tet_pattern : [Vec<u8>;4] = self.get_pattern();
         let mut score :u8 = 0;
         let mut best_score = 0;
-        let mut pose = [0,0];
-        let mut piece_shape;
+        let mut pose : [i8;2] = [0,0];
+        let mut piece_shape : Vec<u8>;
         let mut new_mat;
         let mut is_placed;
         let mut heigth;
@@ -362,27 +363,26 @@ impl Ia{
                 score = Ia::compute_best_place(new_mat,);
                 if score > best_score{
                     best_score = score;
-                    pose[0] = col;
-                    pose[1] = rotate;
+                    pose[0] = col as i8;
+                    pose[1] = rotate as i8;
                 }
             }
         }
 
-        let mut future_inputs :[Input;8] = default_inputs();
-        let mut index = 0;
+        let mut future_inputs :[Input;8] = Ia::default_inputs();
         pose[0] = pose[0] - 4;
         for index in 0..pose[1]{
-            future_inputs[index] = Input::A;
+            future_inputs[index as usize] = Input::A;
         }
 
         if pose[0] > 0 {
             for index in pose[1]..pose[0]+pose[1]{
-                future_inputs[index] = Input::Right;
+                future_inputs[index as usize] = Input::Right;
             }
 
         }else if pose[0]<0{
             for index in 0..(pose[0]+pose[1]).abs(){
-                future_inputs[index] = Input::Left;
+                future_inputs[index as usize] = Input::Left;
             }
         }
         return future_inputs;

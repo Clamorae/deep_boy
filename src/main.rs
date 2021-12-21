@@ -155,7 +155,7 @@ fn main() {
         mat: [[false; 10]; 18],
         old_mat: [[false; 10]; 18],
         tet: PieceType::None,
-        inputs : Ia::default_Inputs(),
+        inputs : Ia::default_inputs(),
         input_iterator : 0
     };
 
