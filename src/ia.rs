@@ -88,12 +88,12 @@ impl Ia{
         }
     }
 
-    pub fn print_field(&mut self){
+    pub fn print_field(&mut self, mat : &[[bool; 10]; 18]){
         println!("┌──────────┐");
         for i in 0..18{
             print!("|");
             for j in 0..10{
-                if self.mat[i][j] {
+                if mat[i][j] {
                     print!("█");
                 }else{
                     print!(" ");
@@ -209,7 +209,8 @@ impl Ia{
         self.get_next_tet(mem);
         if self.mat != self.old_mat {
             print!("Hewo bebou");
-            self.inputs = self.find_best_place();
+            //self.inputs = self.find_best_place();
+            println!("Screen Score {}",Ia::compute_score(&self.mat));
             self.input_iterator = 0 //Reseting the parsing of inputs
         }
     }
@@ -225,7 +226,7 @@ impl Ia{
 
     /*This function will take a position and then compute a score. Lower is the score better is the position.*/
     //TODO Make a enum for rotate ?
-    fn compute_best_place(matrix : &[[bool; 10]; 18]) -> u8{
+    fn compute_score(matrix : &[[bool; 10]; 18]) -> u16{
         /*gaps = number of gap
         height_mean = mean of the heigths
         max_diff diff between highest and lowest
@@ -261,7 +262,7 @@ impl Ia{
         height_mean = height_mean/10;
         let max_diff = max_height - min_height;
 
-        (gaps + height_mean + max_diff + max_side_diff) as u8 // score
+        (gaps + height_mean + max_diff + max_side_diff) as u16 // score
     }
 
     /*this function will check for each possible position of the tetromino which one is the better.
@@ -294,7 +295,8 @@ impl Ia{
                             println!("Piece shape {}",piece_shape.len());
                             println!("i {}",i);
                             println!("End me please {}",heigth+1-piece_shape[i] as usize);
-                            if heigth as u8+1 - piece_shape[i] == 18 {
+                            if heigth as u8+1 - piece_shape[i] == 17 {
+                                is_placed = 1;
                                 for i in 0..piece_shape.len(){
                                     new_mat[heigth-piece_shape[i] as usize][col+i as usize] = true;
                                 }
@@ -361,8 +363,7 @@ impl Ia{
                                     },
                                     PieceType::None => {}
                                 }
-                            }
-                            if new_mat[heigth+1-piece_shape[i] as usize][col+i as usize]{
+                            }else if new_mat[heigth+1-piece_shape[i] as usize][col+i as usize]{
                                 is_placed = 1;
                                 for i in 0..piece_shape.len(){
                                     new_mat[heigth-piece_shape[i] as usize][col+i as usize] = true;
@@ -436,7 +437,9 @@ impl Ia{
                         }
                     }
                 }
-                score = Ia::compute_best_place(&new_mat);
+                self.print_field(&new_mat);
+                score = Ia::compute_score(&new_mat);
+
                 if score > best_score{
                     best_score = score;
                     pose[0] = col as i8;
