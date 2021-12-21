@@ -30,11 +30,51 @@ pub enum Input{
     None
 }
 
+/*pub enum TetPattern { //Plz end me
+    I(([u8;4],[u8;1],[u8;4],[u8;1])),
+    J(([u8;3],[u8;2],[u8;3],[u8;2])),
+    L(([u8;3],[u8;2],[u8;3],[u8;2])),
+    O(([u8;2],[u8;2],[u8;2],[u8;2])),
+    S(([u8;3],[u8;2],[u8;3],[u8;2])),
+    Z(([u8;3],[u8;2],[u8;3],[u8;2])),
+    T(([u8;3],[u8;2],[u8;3],[u8;2])),
+}*/
+/*
+pub enum TetPattern { //Plz end me
+    I([Vec<u8>,Vec<u8>,Vec<u8>,Vec<u8>]),
+    J(([u8;3],[u8;2],[u8;3],[u8;2])),
+    L(([u8;3],[u8;2],[u8;3],[u8;2])),
+    O(([u8;2],[u8;2],[u8;2],[u8;2])),
+    S(([u8;3],[u8;2],[u8;3],[u8;2])),
+    Z(([u8;3],[u8;2],[u8;3],[u8;2])),
+    T(([u8;3],[u8;2],[u8;3],[u8;2])),
+}
+*/
 //tile: 47
 //9802
 //+0x1 pour l'axe x
 //+0x20 pour l'axe y
+
+
+fn default_inputs() -> [Input;8]{
+    [Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,Input::None]
+}
+
 impl Ia{
+
+    pub fn get_pattern (&self) -> [Vec<u8>;4]{
+        match self.tet {
+            PieceType::O => [vec![0; 2];4],
+            PieceType::T => [vec![1,0,1],vec![0,1],vec![0; 3],vec![1,0]],
+            PieceType::S => [vec![0,0,1],vec![1,0],vec![0,0,1],vec![1,0]],
+            PieceType::L => [vec![0,0,0],vec![2,0],vec![0,1,1],vec![0,0]],
+            PieceType::J => [vec![0,0,0],vec![0,0],vec![1,1,0],vec![0,2]],
+            PieceType::I => [vec![0,0,0,0],vec![0],vec![0,0,0,0],vec![0]],
+            PieceType::Z => [vec![1,0,0],vec![0,1],vec![1,0,0],vec![0,1]],
+            _ => { [vec![0; 2];4]} //Never gonna happend but meh
+        }
+    }
+
 
     /*Generate the matrix containing already set tetriminos*/
     pub fn get_field(&mut self, mem: &mut Memory){
@@ -180,185 +220,181 @@ impl Ia{
     }
 
 
-
-
-}
-
-
-/*
-/*This function will take a position and then compute a score. Lower is the score better is the position.*/
-//TODO Make a enum for rotate ?
-fn compute_best_place(matrix : &[[bool; 144]; 160],col : u8) -> u8{
-    /*gaps = number of gap
-    height_mean = mean of the heigths
-    max_diff diff between highest and lowest
-    max_side_diff = max dif between two side raw*/
-    let mut gaps = 0; height_mean = 0; min_height = 18; max_height = 0; max_side_diff = 0;
-    let mut col_heigth =[0,0,0,0,0,0,0,0,0,0];
-    for column in 0..9{
-        for raw in 0..18{
-            if matrix[raw][column]== false && col_heigth[column]!=0{
-                gaps+=1;
-            }else if matrix[raw][column]== true && col_heigth[column]==0{
-                col_heigth[column]=(18-raw);
-                height_mean+=(18-raw);
+    /*This function will take a position and then compute a score. Lower is the score better is the position.*/
+    //TODO Make a enum for rotate ?
+    fn compute_best_place(matrix : &[[bool; 10]; 18],col : u8) -> u8{
+        /*gaps = number of gap
+        height_mean = mean of the heigths
+        max_diff diff between highest and lowest
+        max_side_diff = max dif between two side raw*/
+        let mut gaps = 0;
+        let mut height_mean = 0;
+        let mut min_height = 18;
+        let mut max_height = 0;
+        let mut max_side_diff = 0;
+        let mut col_height =[0,0,0,0,0,0,0,0,0,0];
+        for column in 0..9{
+            for raw in 0..18{
+                if matrix[raw][column]== false && col_height[column]!=0{
+                    gaps+=1;
+                }else if matrix[raw][column]== true && col_height[column]==0{
+                    col_height[column]=(18-raw);
+                    height_mean+=(18-raw);
+                }
+            }
+            if min_height > col_height[column]{
+                min_height= col_height[column];
+            }
+            if max_height > col_height[column]{
+                max_height= col_height[column];
+            }
+            if column >=1{
+                if (col_height[column -1]- col_height[column]).abs() >max_side_diff{
+                    max_side_diff=(col_height[column -1]- col_height[column]).abs();
+                }
             }
         }
-        if min_height > col_heigth[column]{
-            min_height=col_heigth[column];
-        }
-        if max_height > col_heigth[column]{
-            max_height=col_heigth[column];
-        }
-        if column >=1{
-            if value.abs(col_heigth[column -1]-col_heigth[column])>max_side_diff{
-                max_side_diff=value.abs(col_heigth[column -1]-col_heigth[column]);
-            }
-        }
+        height_mean = height_mean/10;
+        let max_diff = max_height - min_height;
+
+        (gaps + height_mean + max_diff + max_side_diff) as u8 // score
     }
-    height_mean = height_mean/10;
-    let max_diff = max_height - min_height;
 
-    score=gaps*w1+height_mean*w2+max_diff*w3+max_side_diff*w4;
-}
+    /*this function will check for each possible position of the tetromino which one is the better.
+    Then it will call function to move the piece to the right place*/
+    fn find_best_place(&mut self, mat : &[[bool; 10]; 18]) -> [Input; 8] {
+        /*This is a matrix storing array, in each array the down side of a piece is represented
+        0 is the lowest point on the piece, 15 is an empty line,
+        1 and 2 are the difference between this place of the piece and the lowest level of the piece
+        the first array in each line represent the base piece shape
+        each other array in line represent the base piece shape ater a counterclockwise rotation
+        */
+        let mut tet_pattern : [Vec<u8>;4] = self.get_pattern();
+        let mut score :u8 = 0;
+        let mut best_score = 0;
+        let mut pose = [0,0];
+        let mut piece_shape;
+        let mut new_mat;
+        let mut is_placed;
+        let mut heigth;
 
-/*this function will check for each possible position of the tetromino which one is the better.
-Then it will call function to move the piece to the right place*/
-fn find_best_place(mat : &[[bool; 144]; 160], piece : &piece) -> [Input] {
-    /*This is a matrix storing array, in each array the down side of a piece is represented
-    0 is the lowest point on the piece, 15 is an empty line,
-    1 and 2 are the difference between this place of the piece and the lowest level of the piece
-    the first array in each line represent the base piece shape
-    each other array in line represent the base piece shape ater a counterclockwise rotation
-    */
-    let mut tet_patern;
-    match self.tet {
-        O => tet_patern = [[0,0],[0,0],[0,0],[0,0]],
-        T => tet_patern = [[1,0,1],[0,1],[0,0,0],[1,0]],
-        S => tet_patern = [[0,0,1],[1,0],[0,0,1],[1,0]],
-        L => tet_patern = [[0,0,0],[2,0],[0,1,1],[0,0]],
-        J => tet_patern = [[0,0,0],[0,0],[1,1,0],[0,2]],
-        I => tet_patern = [[0,0,0,0],[0],[0,0,0,0],[0]],
-        Z => tet_patern = [[1,0,0],[0,1],[1,0,0],[0,1]]
-    }
-    let mut score :u8 = 0;
-    let mut best_score = 0;
-    let mut pose = [0,0];
-    let mut piece_shape;
-    let mut new_mat;
-    let mut is_placed;
-    let mut heigth
-
-    for col in 0..9{
-        for rotate in  0..3{
-            piece_shape = tet_patern[rotate];
-            new_mat = mat;
-            is_placed = 0;
-            heigth = 15;
-            if piece_shape.len()+col<9{
-                while is_placed == 0{
-                    for i in range 0..piece_shape.len(){
-                        if new_mat[col+i][heigth+1-piece_shape[i]]==1{
-                            is_placed = 1;
-                            for i in range 0..piece_shape.len(){
-                                new_mat[col+i][heigth-piece_shape[i]] = 1;
-                            }
-                            match self.tet {
-                                O => {
-                                    new_mat[col][heigth-1] = 1;
-                                    new_mat[col+1][heigth-1] = 1;
-                                    },
-                                T => {
-                                    match rotate{
-                                        0 => new_mat[col+1][heigth-1] = 1,
-                                        1 => {new_mat[col][heigth-1] = 1;
-                                              new_mat[col][heigth-2] = 1;},
-                                        2 => new_mat[col+1][heigth-1] = 1,
-                                        3 => {new_mat[col+1][heigth-1] = 1;
-                                            new_mat[col+1][heigth-2] = 1;}
-                                    }
+        for col in 0..9{
+            for rotate in  0..3{
+                piece_shape = tet_pattern[rotate];
+                new_mat = mat;
+                is_placed = 0;
+                heigth = 15;
+                if piece_shape.len()+col<9{
+                    while is_placed == 0{
+                        for i  in 0..piece_shape.len(){
+                            if new_mat[col+i as usize][heigth+1-piece_shape[i] as usize]{
+                                is_placed = 1;
+                                for i in 0..piece_shape.len(){
+                                    new_mat[col+i as usize][heigth-piece_shape[i] as usize] = true;
                                 }
-                                S => {
-                                     if rotate==0 || rotate==2{
-                                         new_mat[col][heigth-2] = 1;
-                                         new_mat[col+1][heigth-1] = 1;
-                                     }else{
-                                         new_mat[col+1][heigth-1] = 1;
-                                     }
+                                match self.tet {
+                                    PieceType::O => {
+                                        new_mat[col as usize][heigth-1 as usize] = true;
+                                        new_mat[col+1 as usize][heigth-1 as usize] = true;
                                     },
-                                L => {
+                                    PieceType::T => {
                                         match rotate{
-                                            0 => new_mat[col+2][heigth-1] = 1,
-                                            1 => {new_mat[col+1][heigth-1] = 1;
-                                                  new_mat[col+1][heigth-2] = 1;},
-                                            2 => new_mat[col][heigth-1] = 1,
-                                            3 => {new_mat[col][heigth-1] = 1;
-                                                new_mat[col][heigth-2] = 1;}
+                                            0 => new_mat[col+1][heigth-1] = true,
+                                            1 => {new_mat[col][heigth-1] = true;
+                                                new_mat[col][heigth-2] = true;},
+                                            2 => new_mat[col+1][heigth-1] = true,
+                                            3 => {new_mat[col+1][heigth-1] = true;
+                                                new_mat[col+1][heigth-2] = true;}
                                         }
                                     }
-                                J => {
-                                    match rotate{
-                                        0 => new_mat[col][heigth-1] = 1,
-                                        1 => {new_mat[col+1][heigth-1] = 1;
-                                              new_mat[col+1][heigth-2] = 1;},
-                                        2 => new_mat[col+2][heigth-1] = 1,
-                                        3 => {new_mat[col][heigth-1] = 1;
-                                            new_mat[col][heigth-2] = 1;}
+                                    PieceType::S => {
+                                        if rotate==0 || rotate==2{
+                                            new_mat[col][heigth-2] = true;
+                                            new_mat[col+1][heigth-1] = true;
+                                        }else{
+                                            new_mat[col+1][heigth-1] = true;
+                                        }
+                                    },
+                                    PieceType::L => {
+                                        match rotate{
+                                            0 => new_mat[col+2][heigth-1] = true,
+                                            1 => {new_mat[col+1][heigth-1] = true;
+                                                new_mat[col+1][heigth-2] = true;},
+                                            2 => new_mat[col][heigth-1] = true,
+                                            3 => {new_mat[col][heigth-1] = true;
+                                                new_mat[col][heigth-2] = true;},
+                                            _ => ()
+                                        }
+                                    }
+                                    PieceType::J => {
+                                        match rotate{
+                                            0 => new_mat[col][heigth-1] = true,
+                                            1 => {new_mat[col+1][heigth-1] = true;
+                                                new_mat[col+1][heigth-2] = true;},
+                                            2 => new_mat[col+2][heigth-1] = true,
+                                            3 => {new_mat[col][heigth-1] = true;
+                                                new_mat[col][heigth-2] = true;},
+                                            _ => ()
+                                        }
+                                    }
+                                    PieceType::I => {
+                                        if rotate==1 || rotate==3{
+                                            new_mat[col][heigth-1] = true;
+                                            new_mat[col][heigth-2] = true;
+                                            new_mat[col][heigth-3] = true;
+                                        }
+                                    },
+                                    PieceType::Z => {
+                                        if rotate==0 || rotate== 2{
+                                            new_mat[col][heigth-1] = true;
+                                            new_mat[col+1][heigth-2] = true;
+                                        }else{
+                                            new_mat[col+1][heigth-1] = true;
+                                        }
                                     }
                                 }
-                                I => {
-                                    if rotate==1 || rotate==3{
-                                        new_mat[col][heigth-1] = 1;
-                                        new_mat[col][heigth-2] = 1;
-                                        new_mat[col][heigth-3] = 1;
-                                    }
-                                   },
-                                Z => {
-                                    if rotate==0 || rotate== 2{
-                                        new_mat[col][heigth-1] = 1;
-                                        new_mat[col+1][heigth-2] = 1;
-                                    }else{
-                                        new_mat[col+1][heigth-1] = 1;
-                                    }
-                                   }
+                            }else{
+                                heigth +=1;
                             }
-                        }else{
-                            heigth +=1;
                         }
                     }
                 }
+                score = Ia::compute_best_place(new_mat,);
+                if score > best_score{
+                    best_score = score;
+                    pose[0] = col;
+                    pose[1] = rotate;
+                }
             }
-            score = compute_best_place(new_mat);
-            if score > best_score{
-                best_score = score;
-                pose[0] = col;
-                pose[1] = rotate;
+        }
+
+        let mut future_inputs :[Input;8] = default_inputs();
+        let mut index = 0;
+        pose[0] = pose[0] - 4;
+        for index in 0..pose[1]{
+            future_inputs[index] = Input::A;
+        }
+
+        if pose[0] > 0 {
+            for index in pose[1]..pose[0]+pose[1]{
+                future_inputs[index] = Input::Right;
+            }
+
+        }else if pose[0]<0{
+            for index in 0..(pose[0]+pose[1]).abs(){
+                future_inputs[index] = Input::Left;
             }
         }
+        return future_inputs;
     }
 
-    let mut future_inputs[pose[0]+pose[1]];
-    let mut index = 0;
-    pose[0] = pose[0] - 4;
-    for i in range 0..rotate{
-        future_inputs[index] = Input.A;
-            i+=1
-    }
 
-    if pose[0] > 0 {
-        for i in range 0..pose[0]{
-            future_inputs[index] = Input.Right;
-            i+=1
-        }
 
-    }else if pose[0]<0{
-        for i in range 0..value.abs(pose[0]){
-            future_inputs[index] = Input.Left;
-            i+=1
-        }
-    }
- Return future_inputs;
 }
+
+
+
+
 
 /*fn genetic(){
     /*
@@ -377,4 +413,4 @@ fn find_best_place(mat : &[[bool; 144]; 160], piece : &piece) -> [Input] {
     UNTIL population has converged
     */
 }*/
-*/
+
