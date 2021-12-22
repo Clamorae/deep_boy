@@ -389,11 +389,14 @@ impl Ia{
 
     /*This function will take a position and then compute a score. Lower is the score better is the position.*/
     fn compute_score(matrix : &[[bool; 10]; 18], w1:f32,w2:f32,w3:f32,w4:f32) -> f32{
-        /*The final score depends on the following parameter
+        /*
+        The final score depends on the following parameter
         gaps = number of gap
         height_mean = mean of the heigths
         max_diff diff between highest and lowest
-        max_side_diff = max dif between two side raw*/
+        max_side_diff = max dif between two side raw
+        standart_deviation = standart deviation between the heights
+        */
         let mut gaps = 0;
         let mut height_mean :i8 = 0;
         let mut min_height :i8 = 18;
@@ -424,6 +427,11 @@ impl Ia{
             }
         }
         height_mean = height_mean/10;
+        let mut standart_deviation :f32 = 0.0;
+        for i in 0..9{
+            standart_deviation+=(col_height[i]-height_mean).pow(2) as f32;
+        }
+        standart_deviation=(standart_deviation*0.1).sqrt();
         let max_diff = max_height - min_height;
 
         (gaps as f32 * w1 + height_mean as f32 * w2 + max_diff as f32 * w3 + max_side_diff as f32 *w4) as f32 // score
