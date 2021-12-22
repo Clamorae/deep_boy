@@ -428,6 +428,20 @@ impl Ia{
 
         (gaps as f32 * w1 + height_mean as f32 * w2 + max_diff as f32 * w3 + max_side_diff as f32 *w4) as f32 // score
     }
+
+    /*fn create_child(parent1:[f32;5],parent2:[f32;5])->[f32;5]{
+        /*
+            This function take two IA "parent" and create a child with the mean of them.
+            The last case in the child is for his future score.
+        */
+        let mut child : [f32;5];
+        for i in 0..3{
+            child[i] = (parent1[i] + parent2[i])/2;
+        }
+        return child;
+    }*/
+
+
 }
 
 /*fn genetic(){
