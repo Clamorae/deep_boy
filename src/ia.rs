@@ -1,5 +1,6 @@
 use crate::memory::Memory;
 use crate::controls::Controls;
+use std::cmp;
 
 pub struct Ia{
     pub mat :[[bool; 10]; 18],
@@ -30,6 +31,8 @@ pub enum Input{
     None
 }
 
+
+
 /*pub enum TetPattern { //Plz end me
     I(([u8;4],[u8;1],[u8;4],[u8;1])),
     J(([u8;3],[u8;2],[u8;3],[u8;2])),
@@ -59,32 +62,51 @@ pub enum TetPattern { //Plz end me
 
 impl Ia{
 
+
+
     pub fn default_inputs() -> [Input;8]{
         [Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,Input::None]
     }
 
-    pub fn get_pattern (&self) -> [Vec<u8>;4]{
-        match self.tet {
-            PieceType::O => [vec![0; 2],vec![0; 2],vec![0; 2],vec![0; 2]],
-            PieceType::T => [vec![1,0,1],vec![0,1],vec![0; 3],vec![1,0]],
-            PieceType::S => [vec![0,0,1],vec![1,0],vec![0,0,1],vec![1,0]],
-            PieceType::L => [vec![0,0,0],vec![2,0],vec![0,1,1],vec![0,0]],
-            PieceType::J => [vec![0,0,0],vec![0,0],vec![1,1,0],vec![0,2]],
-            PieceType::I => [vec![0,0,0,0],vec![0],vec![0,0,0,0],vec![0]],
-            PieceType::Z => [vec![1,0,0],vec![0,1],vec![1,0,0],vec![0,1]],
-            _ => { [vec![0; 2],vec![0; 2],vec![0; 2],vec![0; 2]]} //Never gonna happend but meh
-        }
-    }
-
-
-    /*Generate the matrix containing already set tetriminos*/
-    pub fn get_field(&mut self, mem: &mut Memory){
-        self.old_mat = self.mat;
-
-        for i in 0..18 {
-            for j in 0..10{
-                self.mat[i][j] = (mem.read((0x9802+(i*0x20)+j) as u16)) != 47;
-            }
+    pub fn get_tet_coord(tet: &PieceType, rot: u8) -> [[u8; 2];4]{
+        match tet {
+            PieceType::O => [[0,0],[1,0],[0,1],[1,1]],
+            PieceType::T => match rot {
+                0 => [[0,1],[1,1],[2,1],[1,2]],
+                1 => [[1,0],[1,1],[1,2],[0,1]],
+                2 => [[0,1],[1,1],[2,1],[1,0]],
+                _ => [[1,0],[1,1],[1,2],[2,1]],
+            },
+            PieceType::S => match rot {
+                0 => [[0,1],[1,1],[1,2],[2,2]],
+                1 => [[1,0],[1,1],[0,2],[0,3]],
+                2 => [[0,1],[1,1],[1,2],[2,2]],
+                _ => [[1,0],[1,1],[0,2],[0,3]],
+            },
+            PieceType::L => match rot {
+                0 => [[0,1],[1,1],[1,2],[0,2]],
+                1 => [[0,0],[1,0],[1,1],[1,2]],
+                2 => [[2,0],[2,1],[1,1],[0,1]],
+                _ => [[1,0],[1,1],[1,2],[2,2]],
+            },
+            PieceType::J => match rot {
+                0 => [[0,1],[1,1],[2,1],[2,2]],
+                1 => [[1,0],[1,1],[1,2],[0,2]],
+                2 => [[0,0],[0,1],[1,1],[2,1]],
+                _ => [[2,0],[1,0],[1,1],[1,2]],
+            },
+            PieceType::I => match rot {
+                0 => [[0,0],[0,1],[0,2],[0,3]],
+                1 => [[0,0],[1,0],[2,0],[3,0]],
+                2 => [[0,0],[0,1],[0,2],[0,3]],
+                _ => [[0,0],[1,0],[2,0],[3,0]],
+            },
+            _ => match rot { //Z
+                0 => [[0,1],[1,1],[1,2],[2,2]],
+                1 => [[1,0],[1,1],[0,1],[0,2]],
+                2 => [[0,1],[1,1],[1,2],[2,2]],
+                _ => [[1,0],[1,1],[0,1],[0,2]],
+            },
         }
     }
 
@@ -104,6 +126,116 @@ impl Ia{
         }
         println!("└──────────┘");
     }
+
+    pub fn get_offset(tet: &PieceType, rot: u8) -> i8 {
+        match tet{
+            PieceType::O => 4,
+            PieceType::I => match rot {
+                0 | 2 => 3,
+                _ => 4,
+            },
+            PieceType::L | PieceType::J | PieceType::T => match rot {
+                3 => 4,
+                _ => 3,
+            },
+            _ => 3,
+        }
+    }
+
+    pub fn check_state(&self, tet: &PieceType, rot: u8, x:i8, y:i8) -> bool {
+        let tet_coord : [[u8; 2];4] = Ia::get_tet_coord(&tet, rot);
+        for i in 0..4{
+            if self.mat[(y + (tet_coord[i][1])as i8) as usize][(x + (tet_coord[i][0]) as i8) as usize] {
+                return false;
+            }
+
+        }
+        return true;
+    }
+
+    pub fn get_best_inputs(&mut self) -> [i8; 2] {
+        let mut best_move: i8 = 0;
+        let mut best_rot: i8 = 0;
+        let mut best_score: u16 = 65534;
+        let mut score: u16;
+        let mut tet_coord: [[u8; 2];4] = [[0;2];4];
+        let (mut x_min, mut x_max, mut y_max): (u8,u8,u8) = (0,0,0);
+        let mut run:bool;
+        let mut y_ite;
+        let mut x :i8= 0;
+        let mut dummy_mat:[[bool; 10]; 18] = self.mat;
+
+        //For every rotation
+        for rot in 0..4{
+            //get tet_coord
+            tet_coord = Ia::get_tet_coord(&self.tet, rot);
+            //get x_min, x_max and y_max
+            x_min = cmp::min(tet_coord[0][0],cmp::min(tet_coord[1][0],cmp::min(tet_coord[2][0],tet_coord[3][0])));
+            x_max = cmp::max(tet_coord[0][0],cmp::max(tet_coord[1][0],cmp::max(tet_coord[2][0],tet_coord[3][0])));
+            y_max = cmp::max(tet_coord[0][1],cmp::max(tet_coord[1][1],cmp::max(tet_coord[2][1],tet_coord[3][1])));
+            //for every position possible
+            for j in 10-x_min..20-x_max{
+                x = j as i8 - 10;
+                run = true;
+                y_ite = 17-y_max;
+                while run{
+                    if self.check_state(&self.tet,rot,x as i8,y_ite as i8){//The tet can be put down
+                        for i in 0..4{
+                            dummy_mat[(y_ite+tet_coord[i][1]) as usize][(x+(tet_coord[i][0] as i8)) as usize] = true;
+                        }
+                        self.print_field(&dummy_mat);
+                        score = Ia::compute_score(&dummy_mat);
+                        if score <= best_score{
+                            best_score = score;
+                            best_move = x as i8 - x_min as i8 - Ia::get_offset(&self.tet,rot);
+                            best_rot = rot as i8;
+                        }
+
+
+                        //reinit dummy_mat
+                        dummy_mat = self.mat;
+                        run = false;
+
+                    }else{
+                        y_ite -= 1;
+                    }
+
+                }
+            }
+        }
+        return [best_move, best_rot];
+    }
+
+    /*
+    pub fn get_pattern (&self) -> [Vec<u8>;4]{
+        match self.tet {
+            PieceType::O => [vec![0; 2],vec![0; 2],vec![0; 2],vec![0; 2]],
+            PieceType::T => [vec![1,0,1],vec![0,1],vec![0; 3],vec![1,0]],
+            PieceType::S => [vec![0,0,1],vec![1,0],vec![0,0,1],vec![1,0]],
+            PieceType::L => [vec![0,0,0],vec![2,0],vec![0,1,1],vec![0,0]],
+            PieceType::J => [vec![0,0,0],vec![0,0],vec![1,1,0],vec![0,2]],
+            PieceType::I => [vec![0,0,0,0],vec![0],vec![0,0,0,0],vec![0]],
+            PieceType::Z => [vec![1,0,0],vec![0,1],vec![1,0,0],vec![0,1]],
+            _ => { [vec![0; 2],vec![0; 2],vec![0; 2],vec![0; 2]]} //Never gonna happend but meh
+        }
+    }
+    */
+
+    //Ici commence le refactor
+    /*Fonction pour definir */
+
+
+    /*Generate the matrix containing already set tetriminos*/
+    pub fn get_field(&mut self, mem: &mut Memory){
+        self.old_mat = self.mat;
+
+        for i in 0..18 {
+            for j in 0..10{
+                self.mat[i][j] = (mem.read((0x9802+(i*0x20)+j) as u16)) != 47;
+            }
+        }
+    }
+
 
     pub fn get_next_tet(&mut self, mem: &mut Memory){
         match mem.read(0xC203){
@@ -264,6 +396,8 @@ impl Ia{
 
         (gaps + height_mean + max_diff + max_side_diff) as u16 // score
     }
+}
+    /*
 
     /*this function will check for each possible position of the tetromino which one is the better.
     Then it will call function to move the piece to the right place*/
@@ -470,8 +604,7 @@ impl Ia{
 
 
 }
-
-
+*/
 
 
 
