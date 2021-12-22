@@ -139,8 +139,8 @@ impl Ia{
 
         let mut best_move: i8 = 0;
         let mut best_rot: i8 = 0;
-        let mut best_score: u16 = 65534;
-        let mut score: u16;
+        let mut best_score: f32 = 65534.0;
+        let mut score: f32;
         let mut tet_coord: [[u8; 2];4] = [[0;2];4];
         let (mut x_min, mut x_max, mut y_max, mut x_min_win): (u8,u8,u8,u8) = (0,0,0,0);
         let mut run:bool;
@@ -173,7 +173,7 @@ impl Ia{
                 for i in 0..4{
                     dummy_mat[(y_ite-1+tet_coord[i][1]) as usize][(x+(tet_coord[i][0] as i8)) as usize] = true;
                 }
-                score = Ia::compute_score(&dummy_mat);
+                score = Ia::compute_score(&dummy_mat,0.5,0.5,0.5,0.5);
                 if score <= best_score{
                     best_score = score;
                     best_move = x as i8;
@@ -388,7 +388,7 @@ impl Ia{
 
 
     /*This function will take a position and then compute a score. Lower is the score better is the position.*/
-    fn compute_score(matrix : &[[bool; 10]; 18]) -> u16{
+    fn compute_score(matrix : &[[bool; 10]; 18], w1:f32,w2:f32,w3:f32,w4:f32) -> f32{
         /*The final score depends on the following parameter
         gaps = number of gap
         height_mean = mean of the heigths
@@ -426,8 +426,9 @@ impl Ia{
         height_mean = height_mean/10;
         let max_diff = max_height - min_height;
 
-        (gaps + height_mean + max_diff + max_side_diff) as u16 // score
+        (gaps as f32 * w1 + height_mean as f32 * w2 + max_diff as f32 * w3 + max_side_diff as f32 *w4) as f32 // score
     }
+}
 
 /*fn genetic(){
     /*
