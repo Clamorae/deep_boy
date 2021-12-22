@@ -6,7 +6,7 @@ pub struct Ia{
     pub mat :[[bool; 10]; 18],
     pub old_mat : [[bool; 10]; 18],
     pub tet : PieceType,
-    pub inputs : [Input; 16], //TODO Check le nombre max de coup ?
+    pub inputs : [Input; 30], //TODO Check le nombre max de coup ?
     pub input_iterator : u8
     //child : [u8; 4]
     //Jeux de coup ?
@@ -66,9 +66,11 @@ impl Ia{
 
 
 
-    pub fn default_inputs() -> [Input;16]{
+    pub fn default_inputs() -> [Input;30]{
         [Input::End,Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,
-        Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,Input::None]
+        Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,
+        Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,
+        Input::None,Input::None,Input::None,Input::None,Input::None,Input::None]
     }
 
     pub fn get_tet_coord(tet: &PieceType, rot: u8) -> [[u8; 2];4]{
@@ -81,10 +83,10 @@ impl Ia{
                 _ => [[1,0],[1,1],[1,2],[2,1]],
             },
             PieceType::S => match rot {
-                0 => [[0,1],[1,1],[1,2],[2,2]],
-                1 => [[1,0],[1,1],[0,2],[0,3]],
-                2 => [[0,1],[1,1],[1,2],[2,2]],
-                _ => [[1,0],[1,1],[0,2],[0,3]],
+                0 => [[2,1],[1,1],[1,2],[0,2]],
+                1 => [[0,0],[0,1],[1,1],[1,2]],
+                2 => [[2,1],[1,1],[1,2],[0,2]],
+                _ => [[0,0],[0,1],[1,1],[1,2]],
             },
             PieceType::L => match rot {
                 0 => [[0,1],[1,1],[1,2],[0,2]],
@@ -99,10 +101,10 @@ impl Ia{
                 _ => [[2,0],[1,0],[1,1],[1,2]],
             },
             PieceType::I => match rot {
-                0 => [[0,0],[0,1],[0,2],[0,3]],
-                1 => [[0,0],[1,0],[2,0],[3,0]],
-                2 => [[0,0],[0,1],[0,2],[0,3]],
-                _ => [[0,0],[1,0],[2,0],[3,0]],
+                0 => [[0,0],[1,0],[2,0],[3,0]],
+                1 => [[0,0],[0,1],[0,2],[0,3]],
+                2 => [[0,0],[1,0],[2,0],[3,0]],
+                _ => [[0,0],[0,1],[0,2],[0,3]],
             },
             _ => match rot { //Z
                 0 => [[0,1],[1,1],[1,2],[2,2]],
@@ -119,7 +121,7 @@ impl Ia{
             print!("|");
             for j in 0..10{
                 if mat[i][j] {
-                    print!("█");
+                    print!("@");
                 }else{
                     print!(" ");
                 }
@@ -204,8 +206,8 @@ impl Ia{
             }
         }
         self.print_field(&best_mat);
-        println!("x:{}  move:{}  rot:{}",best_move,best_move - x_min_win as i8 - Ia::get_offset(&self.tet,best_rot as u8), best_rot);
-        return [best_move - x_min_win as i8 - Ia::get_offset(&self.tet,best_rot as u8), best_rot as i8];
+        println!("x:{}  move:{}  rot:{}",best_move,best_move - Ia::get_offset(&self.tet,best_rot as u8), best_rot);
+        return [best_move - Ia::get_offset(&self.tet,best_rot as u8), best_rot as i8];
     }
 
     /*
@@ -326,7 +328,7 @@ impl Ia{
                 }
             },
             Input::None => {
-                println!("None");
+                //println!("None");
                 self.ready_next_move();
                 temp = Controls {
                     up: 1,
@@ -373,7 +375,7 @@ impl Ia{
     pub fn duet_to_input(&mut self, duet: &[i8;2]) {
         let mut dir = duet[0];
         let mut rot = duet[1];
-        for i in 0..7{
+        for i in 4..14{
             if rot != 0 {
                 self.inputs[i*2+1 as usize] = Input::A;
                 rot -= 1;
@@ -390,7 +392,9 @@ impl Ia{
             self.inputs[i*2+2 as usize] = Input::None;
         }
         self.inputs[0] = Input::Down;
-        self.inputs[15] = Input::End;
+        self.inputs[1] = Input::None;
+        self.inputs[3] = Input::Down;
+        self.inputs[29] = Input::End;
     }
 
     /*Lunched at each new screen, this function will act as the routine for our Ia*/
