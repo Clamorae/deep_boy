@@ -674,18 +674,31 @@ impl Ia{
 
 /*fn genetic(){
     /*
-    Generate the initial population
-    Compute fitness
-        launch ten game and get stats foreach
-    REPEAT
-        Selection
-            keep how many participant?
-        Crossover
-            try try with crossover and mean value
-        Mutation
-            how to adapt?
+
+    Generate the initial population :
+    - first step : générer un individu.
+    - Second step : ajouter l'individu a un "tableau" d'individu (appelé population).
+    - Third step : répéter l'étape 1 et 2 autant de fois que voulue. 
+
+    Compute fitness : 
+    - First step : On donne notre population initial a une fonction de score/classement. 
+                   Elle retourne une population classé : de l'IA qui a le plus grand score tetris à celle qui à le moins bon.
+                   On a donc une Population classé. 
+
+    REPEAT => do while => idée ? 
+
+    Selection made by hitler
+    - First stape : On a en entré notre population classé => 
+                    on va créer une nouvelle population composé des 3 première IA (3 ou plus ça dépend de ce qu'on veut) de notre population initial : 
+                    le meilleur individu de notre population initial sera copié dans une nouvelle population avant de passer au crossover. 
+    - Second step : Crossover : La fonction crossover prend en entré notre nouvelle population et notre population initiale 
+                                et va mixé notre IA0/IA1 , IA1/IA2 , IA0/IA2  avec du 50/50 
+    - Conclusion : on a une nouvelle population composé de notre meilleur individu de notre ancienne population et de trois nouveau individu issue du crossover.
+
+    Mutation
+        how to adapt?
         Compute fitness
-            launch ten game and get stats foreach
+        launch ten game and get stats foreach
     UNTIL population has converged
     */
 }*/
