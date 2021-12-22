@@ -159,29 +159,20 @@ fn main() {
         input_iterator : 0
     };
 
-    let mut best;
-
     crate::file_io::load_savestate(&config, &mut cpu, &mut mem.ram);
     while window.update() {
         window.clear();
-        //print!("\x1B[2J\x1B[1;1H");
+        
 
-        /*ia.get_field(&mut mem);
-        ia.print_field();
-        ia.get_next_tet(&mut mem);
-        ia.print_tet();*/
-        //ia.process_screen(&mut mem);
-        ia.get_field(&mut mem);
-        ia.get_next_tet(&mut mem);
 
-        best = ia.get_best_inputs();
+        ia.process_screen(&mut mem);
 
-        println!("{}-{}",best[0],best[1]);
+
 
 
 
         controls.get_keyboard(&config, &mut cpu, &mut mem, &mut window);
-        //controls.add_controls(ia.get_inputs());
+        controls.add_controls(ia.get_inputs());
         controls.update_ram(&mut mem);
 
         window.push_matrix(&gpu.screen, &mut texture);

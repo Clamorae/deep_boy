@@ -6,7 +6,7 @@ pub struct Ia{
     pub mat :[[bool; 10]; 18],
     pub old_mat : [[bool; 10]; 18],
     pub tet : PieceType,
-    pub inputs : [Input; 8], //TODO Check le nombre max de coup ?
+    pub inputs : [Input; 16], //TODO Check le nombre max de coup ?
     pub input_iterator : u8
     //child : [u8; 4]
     //Jeux de coup ?
@@ -28,7 +28,9 @@ pub enum Input{
     Left,
     Right,
     A,
-    None
+    None,
+    Down,
+    End,
 }
 
 
@@ -64,8 +66,9 @@ impl Ia{
 
 
 
-    pub fn default_inputs() -> [Input;8]{
-        [Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,Input::None]
+    pub fn default_inputs() -> [Input;16]{
+        [Input::End,Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,
+        Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,Input::None]
     }
 
     pub fn get_tet_coord(tet: &PieceType, rot: u8) -> [[u8; 2];4]{
@@ -159,11 +162,12 @@ impl Ia{
         let mut best_score: u16 = 65534;
         let mut score: u16;
         let mut tet_coord: [[u8; 2];4] = [[0;2];4];
-        let (mut x_min, mut x_max, mut y_max): (u8,u8,u8) = (0,0,0);
+        let (mut x_min, mut x_max, mut y_max, mut x_min_win): (u8,u8,u8,u8) = (0,0,0,0);
         let mut run:bool;
         let mut y_ite;
         let mut x :i8= 0;
         let mut dummy_mat:[[bool; 10]; 18] = self.mat;
+        let mut best_mat:[[bool; 10]; 18] = self.mat;
 
         //For every rotation
         for rot in 0..4{
@@ -177,33 +181,31 @@ impl Ia{
             for j in 10-x_min..20-x_max{
                 x = j as i8 - 10;
                 run = true;
-                y_ite = 17-y_max;
-                while run{
-                    if self.check_state(&self.tet,rot,x as i8,y_ite as i8){//The tet can be put down
-                        for i in 0..4{
-                            dummy_mat[(y_ite+tet_coord[i][1]) as usize][(x+(tet_coord[i][0] as i8)) as usize] = true;
-                        }
-                        self.print_field(&dummy_mat);
-                        score = Ia::compute_score(&dummy_mat);
-                        if score <= best_score{
-                            best_score = score;
-                            best_move = x as i8 - x_min as i8 - Ia::get_offset(&self.tet,rot);
-                            best_rot = rot as i8;
-                        }
+                //segment a refaire
+                y_ite = 0;
 
+                while (y_ite < 18-y_max) && (self.check_state(&self.tet,rot,x as i8,y_ite as i8)){
+                    y_ite += 1;
+                }
 
-                        //reinit dummy_mat
-                        dummy_mat = self.mat;
-                        run = false;
+                dummy_mat = self.mat;
 
-                    }else{
-                        y_ite -= 1;
-                    }
-
+                for i in 0..4{
+                    dummy_mat[(y_ite-1+tet_coord[i][1]) as usize][(x+(tet_coord[i][0] as i8)) as usize] = true;
+                }
+                score = Ia::compute_score(&dummy_mat);
+                if score <= best_score{
+                    best_score = score;
+                    best_move = x as i8;
+                    best_rot = rot as i8;
+                    best_mat = dummy_mat;
+                    x_min_win = x_min;
                 }
             }
         }
-        return [best_move, best_rot];
+        self.print_field(&best_mat);
+        println!("x:{}  move:{}  rot:{}",best_move,best_move - x_min_win as i8 - Ia::get_offset(&self.tet,best_rot as u8), best_rot);
+        return [best_move - x_min_win as i8 - Ia::get_offset(&self.tet,best_rot as u8), best_rot as i8];
     }
 
     /*
@@ -238,7 +240,7 @@ impl Ia{
 
 
     pub fn get_next_tet(&mut self, mem: &mut Memory){
-        match mem.read(0xC203){
+        match mem.read(0xC213){
             12 => self.tet = PieceType::O,
             24 => self.tet = PieceType::T,
             20 => self.tet = PieceType::S,
@@ -275,9 +277,12 @@ impl Ia{
             select: 1,
             start: 1
         };
-        match self.inputs[self.input_iterator as usize] {
+        //println!("{}",self.input_iterator/2);
+        match self.inputs[(self.input_iterator/2) as usize] {
             Input::Left => {
-                self.inputs[self.input_iterator as usize] = Input::None;
+
+                //self.inputs[self.input_iterator as usize] = Input::None;
+                println!("Left");
                 self.ready_next_move();
                 temp = Controls {
                     up: 1,
@@ -291,7 +296,8 @@ impl Ia{
                 }
             },
             Input::Right => {
-                self.inputs[self.input_iterator as usize] = Input::None;
+                //self.inputs[(self.input_iterator) as usize] = Input::None;
+                println!("Right");
                 self.ready_next_move();
                 temp = Controls {
                     up: 1,
@@ -305,7 +311,8 @@ impl Ia{
                 }
             },
             Input::A => {
-                self.inputs[self.input_iterator as usize] = Input::None;
+                //self.inputs[(self.input_iterator) as usize] = Input::None;
+                println!("A");
                 self.ready_next_move();
                 temp = Controls {
                     up: 1,
@@ -319,10 +326,38 @@ impl Ia{
                 }
             },
             Input::None => {
+                println!("None");
                 self.ready_next_move();
-                temp = Controls { //TODO METTRE EN DOWN ?
+                temp = Controls {
                     up: 1,
                     down: 1,
+                    left: 1,
+                    right: 1,
+                    a: 1,
+                    b: 1,
+                    select: 1,
+                    start: 1,
+                }
+            },
+            Input::Down => {
+                println!("Down");
+                self.ready_next_move();
+                temp = Controls {
+                    up: 1,
+                    down: 0,
+                    left: 1,
+                    right: 1,
+                    a: 1,
+                    b: 1,
+                    select: 1,
+                    start: 1,
+                }
+            },
+            Input::End => {
+                //self.ready_next_move();
+                temp = Controls {
+                    up: 1,
+                    down: 0,
                     left: 1,
                     right: 1,
                     a: 1,
@@ -335,20 +370,45 @@ impl Ia{
         return temp;
     }
 
+    pub fn duet_to_input(&mut self, duet: &[i8;2]) {
+        let mut dir = duet[0];
+        let mut rot = duet[1];
+        for i in 0..7{
+            if rot != 0 {
+                self.inputs[i*2+1 as usize] = Input::A;
+                rot -= 1;
+            }else if dir < 0{
+                self.inputs[i*2+1 as usize] = Input::Left;
+                dir += 1;
+            }else if dir > 0 {
+                self.inputs[i*2+1 as usize] = Input::Right;
+                dir -= 1;
+            }else{
+                self.inputs[i*2+1 as usize] = Input::Down;
+            }
+
+            self.inputs[i*2+2 as usize] = Input::None;
+        }
+        self.inputs[0] = Input::Down;
+        self.inputs[15] = Input::End;
+    }
+
     /*Lunched at each new screen, this function will act as the routine for our Ia*/
     pub fn process_screen(&mut self, mem: &mut Memory) {
+        let mut best;
+
         self.get_field(mem); //Generating the new screen
-        self.get_next_tet(mem);
         if self.mat != self.old_mat {
-            print!("Hewo bebou");
-            //self.inputs = self.find_best_place();
-            println!("Screen Score {}",Ia::compute_score(&self.mat));
+            self.get_next_tet(mem);
+            //print!("\x1B[2J\x1B[1;1H");
+            best = self.get_best_inputs();
+            self.duet_to_input(&best);
             self.input_iterator = 0 //Reseting the parsing of inputs
         }
     }
 
     pub fn ready_next_move(&mut self) {
-        if self.input_iterator == 7{
+        if self.input_iterator == 255{
             self.input_iterator = 0
         }else{
             self.input_iterator += 1;
