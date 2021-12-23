@@ -179,7 +179,7 @@ impl Ia{
                     }
                 }
 
-                score = Ia::compute_score(&dummy_mat,1.5,0.5,0.5,0.5,0.5);
+                score = Ia::compute_score(&dummy_mat,1.5,0.5,0.5,0.5);
                 if score < best_score{
                     best_score = score;
                     best_move = x as i8;
@@ -408,7 +408,7 @@ impl Ia{
         let mut min_height :i8 = 18;
         let mut max_height:i8 = 0;
         let mut max_side_diff:i8 = 0;
-        let mut col_height:[i8;10] =[0,0,0,0,0,0,0,0,0,0];
+        let mut col_height:[i8;10] = [0,0,0,0,0,0,0,0,0,0];
 
         for column in 0..10{
             for raw in 0..18{
@@ -447,11 +447,11 @@ impl Ia{
             This function take two IA "parent" and create a child with the mean of them.
             The last case in the child is for his future score.
         */
-        let mut child : [f32;5];
-        let mut weight1 :f32
-        let mut weight2 :f32
-        weight1 = parent1[4] * 100 /(parent1[4]+parent2[4]);
-        weight2 = 100 - weight1;
+        let mut child : [f32;5] = [0.0,0.0,0.0,0.0,0.0];
+        let mut weight1 :f32;
+        let mut weight2 :f32;
+        weight1 = parent1[4] * 100.0 /(parent1[4]+parent2[4]);
+        weight2 = 100.0 - weight1;
         for i in 0..4{
             child[i] = (parent1[i] * weight1 + parent2[i] * weight2);
         }
