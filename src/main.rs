@@ -159,7 +159,7 @@ fn main() {
         input_iterator : 0
     };
 
-    crate::file_io::load_savestate(&config, &mut cpu, &mut mem.ram);
+    //crate::file_io::load_savestate(&config, &mut cpu, &mut mem.ram);
     while window.update() {
         window.clear();
         

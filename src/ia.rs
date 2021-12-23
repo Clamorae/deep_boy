@@ -174,10 +174,12 @@ impl Ia{
                 dummy_mat = self.mat;
 
                 for i in 0..4{
-                    dummy_mat[(y_ite-1+tet_coord[i][1]) as usize][(x+(tet_coord[i][0] as i8)) as usize] = true;
+                    if y_ite-1+tet_coord[i][1]<18{
+                        dummy_mat[(y_ite-1+tet_coord[i][1]) as usize][(x+(tet_coord[i][0] as i8)) as usize] = true;
+                    }
                 }
 
-                score = Ia::compute_score(&dummy_mat,1.0,0.5,0.5,0.5,0.5);
+                score = Ia::compute_score(&dummy_mat,5.0,0.5,0.5,0.5,0.5);
                 println!("score:{},rot:{},col:{}",score,rot,j);
                 if score < best_score{
                     best_score = score;
