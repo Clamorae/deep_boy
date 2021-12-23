@@ -180,8 +180,7 @@ impl Ia{
                 }
 
                 score = Ia::compute_score(&dummy_mat,5.0,0.5,0.5,0.5,0.5);
-                println!("score:{},rot:{},col:{}",score,rot,j);
-                if score < best_score{
+                if score <= best_score{
                     best_score = score;
                     best_move = x as i8;
                     best_rot = rot as i8;
@@ -257,7 +256,7 @@ impl Ia{
         match self.inputs[(self.input_iterator/2) as usize] {
             Input::Left => {
 
-                println!("Left");
+                //println!("Left");
                 self.ready_next_move();
                 temp = Controls {
                     up: 1,
@@ -271,7 +270,7 @@ impl Ia{
                 }
             },
             Input::Right => {
-                println!("Right");
+                //println!("Right");
                 self.ready_next_move();
                 temp = Controls {
                     up: 1,
@@ -285,7 +284,7 @@ impl Ia{
                 }
             },
             Input::A => {
-                println!("A");
+                //println!("A");
                 self.ready_next_move();
                 temp = Controls {
                     up: 1,
@@ -312,7 +311,7 @@ impl Ia{
                 }
             },
             Input::Down => {
-                println!("Down");
+                //println!("Down");
                 self.ready_next_move();
                 temp = Controls {
                     up: 1,
@@ -400,7 +399,7 @@ impl Ia{
         The final score depends on the following parameter
         gaps = number of gap
         height_mean = mean of the heigths
-        max_diff diff between highest and lowest
+        max_diff = diff between highest and lowest
         max_side_diff = max dif between two side raw
         standart_deviation = standart deviation between the heights
         */
@@ -409,7 +408,7 @@ impl Ia{
         let mut min_height :i8 = 18;
         let mut max_height:i8 = 0;
         let mut max_side_diff:i8 = 0;
-        let mut col_height:[i8;10] =[0,0,0,0,0,0,0,0,0,0];
+        let mut col_height:[i8;9] =[0,0,0,0,0,0,0,0,0];
 
         for column in 0..9{
             for raw in 0..18{
@@ -424,7 +423,7 @@ impl Ia{
             if min_height > col_height[column]{
                 min_height= col_height[column];
             }
-            if max_height > col_height[column]{
+            if max_height < col_height[column]{
                 max_height= col_height[column];
             }
             if column >=1{
@@ -440,8 +439,8 @@ impl Ia{
         }
         standart_deviation=(standart_deviation*0.1).sqrt();
         let max_diff = max_height - min_height;
-
-        (gaps as f32 * w1 + height_mean as f32 * w2 + max_diff as f32 * w3 + max_side_diff as f32 *w4 +standart_deviation*w5) as f32 // score
+        println!(" array:{:?}",col_height);
+        (gaps as f32 * w1 + max_height as f32 * w2 + max_diff as f32 * w3 + max_side_diff as f32 *w4 +standart_deviation*w5) as f32 // score
     }
 
     /*fn create_child(parent1:[f32;6],parent2:[f32;6])->[f32;6]{
