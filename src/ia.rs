@@ -2,7 +2,8 @@
 use crate::memory::Memory;
 use crate::controls::Controls;
 use std::cmp;
-use crate::ia::GameState::{InGame, GameOver, Hub};
+use crate::ia::GameState::{InGame, GameOver, Hub, TitleScreen};
+use crate::state;
 
 pub struct Ia{
     pub mat :[[bool; 10]; 18],
@@ -18,6 +19,8 @@ pub struct Ia{
 #[derive(Debug)]
 pub enum GameState {
     Start,
+    TitleScreen,
+    GameSelect,
     Hub,
     InGame,
     GameOver,
@@ -41,6 +44,7 @@ pub enum Input{
     A,
     None,
     Down,
+    Start,
     End,
 }
 
@@ -50,14 +54,17 @@ impl Ia{
     /*Check in which game state we are by using the tetris playground*/
     pub fn check_game_state(&mut self) {
         match self.state {
-            GameState::Start =>{if self.mat == [[false; 10]; 18] { self.state = Hub; }}
-            GameState::Hub => {
-                if self.mat == [[false; 10]; 18] { self.state = InGame; }
+            GameState::Start => {if self.mat == state::TITLE_SCREEN {self.state = GameState::TitleScreen;}}
+            GameState::TitleScreen => {if self.mat == state::GAME_SELECT {self.state = GameState::GameSelect ;}}
+            GameState::GameSelect => {
+                if self.mat == state::HUB {self.state = GameState::Hub;}else { println!("this is the HUB thinggy :");self.print_field(&state::HUB);
+                    println!("this is the acctual matrice :");
+                    self.print_field(&self.mat);
+                }
             }
-            GameState::InGame => { if self.mat == [[true; 10]; 18] { self.state = GameOver; } }
-            GameState::GameOver => {
-                if self.mat == [[false; 10]; 18] { self.state = Hub; }
-            }
+            GameState::Hub => {if self.mat == [[false;10];18] {self.state = GameState::InGame;}}
+            GameState::InGame => {if self.mat == state::GAME_OVER {self.state = GameState::GameOver;}}
+            GameState::GameOver => {if self.mat == state::HUB {self.state = GameState::Hub;}}
         }
     }
 
@@ -349,6 +356,19 @@ impl Ia{
                     start: 1,
                 }
             },
+            Input::Start => {
+                self.ready_next_move();
+                temp = Controls {
+                    up: 1,
+                    down: 1,
+                    left: 1,
+                    right: 1,
+                    a: 1,
+                    b: 1,
+                    select: 1,
+                    start: 0,
+                }
+            },
             Input::End => {
                 temp = Controls {
                     up: 1,
@@ -401,13 +421,24 @@ impl Ia{
         let mut best;
 
         self.get_field(mem); //Generating the new screen
+
         if self.mat != self.old_mat {
             self.check_game_state();
-            println!("The current game state is {:?}", self.state);
-            self.get_next_tet(mem);
-            best = self.get_best_inputs();
-            self.duet_to_input(&best);
-            self.input_iterator = 0 //Resetting the parsing of inputs
+            match self.state {
+                GameState::InGame => {
+                    self.get_next_tet(mem);
+                    best = self.get_best_inputs();
+                    self.duet_to_input(&best);
+                    self.input_iterator = 0 //Resetting the parsing of inputs
+                }
+                _ =>{
+                    self.inputs[0] = Input::Start;
+                    self.inputs[1] = Input::None;
+                    self.inputs[3] = Input::Start;
+                    self.inputs[29] = Input::End;
+                    self.input_iterator = 0
+                }
+            }
         }
     }
 

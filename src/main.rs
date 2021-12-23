@@ -9,6 +9,7 @@ mod master;
 mod memory;
 mod timer;
 mod ia;
+mod state;
 
 const PX_TRANSFER: u8 = 2;
 
