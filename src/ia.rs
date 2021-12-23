@@ -442,6 +442,30 @@ impl Ia{
         (gaps as f32 * w1 + max_diff as f32 * w2 + max_side_diff as f32 *w3 +standart_deviation * w4) as f32 // score
     }
 
+    /* This funtion has to goal to create a population */
+    fn create_population(){
+
+        let mut individual0 : [f32;5] = [0.0,0.0,0.0,0.0,0.0];
+        let mut individual1 : [f32;5] = [0.0,0.0,0.0,1.0,0.0];
+        let mut individual2 : [f32;5] = [0.0,0.0,1.0,0.0,0.0];
+        let mut individual3 : [f32;5] = [0.0,0.0,1.0,1.0,0.0];
+        let mut individual4 : [f32;5] = [0.0,1.0,0.0,0.0,0.0];
+        let mut individual5 : [f32;5] = [0.0,1.0,0.0,1.0,0.0];
+        let mut individual6 : [f32;5] = [0.0,1.0,1.0,0.0,0.0];
+        let mut individual7 : [f32;5] = [0.0,1.0,1.0,1.0,0.0];
+        let mut individual8 : [f32;5] = [1.0,0.0,0.0,0.0,0.0];
+        let mut individual9 : [f32;5] = [1.0,0.0,0.0,1.0,0.0];
+        let mut individual10 : [f32;5] = [1.0,0.0,1.0,0.0,0.0];
+        let mut individual11 : [f32;5] = [1.0,0.0,1.0,1.0,0.0];
+        let mut individual12 : [f32;5] = [1.0,1.0,0.0,0.0,0.0];
+        let mut individual13 : [f32;5] = [1.0,1.0,0.0,1.0,0.0];
+        let mut individual14 : [f32;5] = [1.0,1.0,1.0,0.0,0.0];
+        let mut individual15 : [f32;5] = [1.0,1.0,1.0,1.0,0.0];
+        let mut population : [[f32;5];16] = [individual0,individual1,individual2,individual3,individual4,individual5,individual6,individual7,individual8,individual9,individual10,individual11,individual12,individual13,individual14,individual15];
+        return population;
+
+    }
+
     fn create_child(parent1:[f32;5],parent2:[f32;5])->[f32;5]{
         /*
             This function take two IA "parent" and create a child with the mean of them.
