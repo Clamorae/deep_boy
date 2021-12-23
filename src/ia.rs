@@ -89,7 +89,7 @@ impl Ia{
         }
     }
 
-    pub fn print_field(&mut self, mat : &[[bool; 10]; 18]){
+    pub fn print_field(&self,mat : &[[bool; 10]; 18]){
         /*
             This function was used for the debugging, ti will print the playground 
         */
@@ -179,8 +179,8 @@ impl Ia{
                     }
                 }
 
-                score = Ia::compute_score(&dummy_mat,5.0,0.5,0.5,0.5,0.5);
-                if score <= best_score{
+                score = Ia::compute_score(&dummy_mat,1.5,0.5,0.5,0.5,0.5);
+                if score < best_score{
                     best_score = score;
                     best_move = x as i8;
                     best_rot = rot as i8;
@@ -408,9 +408,9 @@ impl Ia{
         let mut min_height :i8 = 18;
         let mut max_height:i8 = 0;
         let mut max_side_diff:i8 = 0;
-        let mut col_height:[i8;9] =[0,0,0,0,0,0,0,0,0];
+        let mut col_height:[i8;10] =[0,0,0,0,0,0,0,0,0,0];
 
-        for column in 0..9{
+        for column in 0..10{
             for raw in 0..18{
                 if matrix[raw][column]== false && col_height[column]!=0{
                     gaps+=1;
@@ -439,8 +439,7 @@ impl Ia{
         }
         standart_deviation=(standart_deviation*0.1).sqrt();
         let max_diff = max_height - min_height;
-        println!(" array:{:?}",col_height);
-        (gaps as f32 * w1 + max_height as f32 * w2 + max_diff as f32 * w3 + max_side_diff as f32 *w4 +standart_deviation*w5) as f32 // score
+        (gaps as f32 * w1 + height_mean as f32 * w2 + max_diff as f32 * w3 + max_side_diff as f32 *w4 +standart_deviation*w5) as f32 // score
     }
 
     /*fn create_child(parent1:[f32;6],parent2:[f32;6])->[f32;6]{
