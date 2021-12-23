@@ -164,8 +164,8 @@ fn main() {
         window.clear();
         
 
-
-        ia.process_screen(&mut mem);
+        
+       ia.process_screen(&mut mem);
 
 
 
