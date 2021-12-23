@@ -63,7 +63,7 @@ impl Ia{
                 _ => [[0,0],[0,1],[1,1],[1,2]],
             },
             PieceType::L => match rot {
-                0 => [[0,1],[1,1],[1,2],[0,2]],
+                0 => [[0,1],[1,1],[2,1],[0,2]],
                 1 => [[0,0],[1,0],[1,1],[1,2]],
                 2 => [[2,0],[2,1],[1,1],[0,1]],
                 _ => [[1,0],[1,1],[1,2],[2,2]],
@@ -173,8 +173,10 @@ impl Ia{
                 for i in 0..4{
                     dummy_mat[(y_ite-1+tet_coord[i][1]) as usize][(x+(tet_coord[i][0] as i8)) as usize] = true;
                 }
-                score = Ia::compute_score(&dummy_mat,0.5,0.5,0.5,0.5);
-                if score <= best_score{
+
+                score = Ia::compute_score(&dummy_mat,1.0,0.5,0.5,0.5,0.5);
+                println!("score:{},rot:{},col:{}",score,rot,j);
+                if score < best_score{
                     best_score = score;
                     best_move = x as i8;
                     best_rot = rot as i8;
@@ -359,9 +361,9 @@ impl Ia{
 
             self.inputs[i*2+2 as usize] = Input::None;
         }
-        self.inputs[0] = Input::Down;
+        self.inputs[0] = Input::None;
         self.inputs[1] = Input::None;
-        self.inputs[3] = Input::Down;
+        self.inputs[3] = Input::None;
         self.inputs[29] = Input::End;
     }
 
@@ -388,7 +390,7 @@ impl Ia{
 
 
     /*This function will take a position and then compute a score. Lower is the score better is the position.*/
-    fn compute_score(matrix : &[[bool; 10]; 18], w1:f32,w2:f32,w3:f32,w4:f32) -> f32{
+    fn compute_score(matrix : &[[bool; 10]; 18], w1:f32,w2:f32,w3:f32,w4:f32,w5:f32) -> f32{
         /*
         The final score depends on the following parameter
         gaps = number of gap
@@ -434,16 +436,16 @@ impl Ia{
         standart_deviation=(standart_deviation*0.1).sqrt();
         let max_diff = max_height - min_height;
 
-        (gaps as f32 * w1 + height_mean as f32 * w2 + max_diff as f32 * w3 + max_side_diff as f32 *w4) as f32 // score
+        (gaps as f32 * w1 + height_mean as f32 * w2 + max_diff as f32 * w3 + max_side_diff as f32 *w4 +standart_deviation*w5) as f32 // score
     }
 
-    /*fn create_child(parent1:[f32;5],parent2:[f32;5])->[f32;5]{
+    /*fn create_child(parent1:[f32;6],parent2:[f32;6])->[f32;6]{
         /*
             This function take two IA "parent" and create a child with the mean of them.
             The last case in the child is for his future score.
         */
-        let mut child : [f32;5];
-        for i in 0..3{
+        let mut child : [f32;6];
+        for i in 0..4{
             child[i] = (parent1[i] + parent2[i])/2;
         }
         return child;
