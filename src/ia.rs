@@ -109,7 +109,10 @@ impl Ia{
         println!("└──────────┘");
     }
 
-    pub fn get_offset(tet: &PieceType, rot: u8) -> i8 {//TODO comment
+    pub fn get_offset(tet: &PieceType, rot: u8) -> i8 {
+        /*
+            This function will return for each piece the number of column between the piece and the left wall
+        */
         match tet{
             PieceType::O => 4,
             PieceType::I => match rot {
@@ -117,7 +120,7 @@ impl Ia{
                 _ => 4,
             },
             PieceType::L | PieceType::J | PieceType::T => match rot {
-                3 => 4,
+                3 => 3,
                 _ => 3,
             },
             _ => 3,
