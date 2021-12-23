@@ -358,7 +358,7 @@ impl Ia{
             },
             Input::Start => {
                 self.ready_next_move();
-                temp = Controls {
+                buffer = Controls {
                     up: 1,
                     down: 1,
                     left: 1,
@@ -524,21 +524,19 @@ impl Ia{
 
     }
 
-    fn population_ranking(population : &mut [[f32;5];16])->&[[f32;5];16]{
-        
-        let mut buffer : [f32;5];
-        for i in  1..17{ // repeat N time
-            for j in 0..15{
-                if population[j][4] > population[j+1][4]{
+    fn population_ranking(population : &mut [[f32;5];16])->&[[f32;5];16] {
+        let mut buffer: [f32; 5];
+        for i in 1..17 { // repeat N time
+            for j in 0..15 {
+                if population[j][4] > population[j + 1][4] {
                     buffer = population[j];
-                    population[j]= population[j+1];
-                    population[j+1] = buffer;
+                    population[j] = population[j + 1];
+                    population[j + 1] = buffer;
                 }
-
-
             }
         }
         return population;
+    }
 
     fn create_new_pop(pop : &mut [[f32;5];16])->&[[f32;5];16]{
         let mut active_population : usize = 16;
