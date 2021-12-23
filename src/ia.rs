@@ -1,13 +1,26 @@
+
 use crate::memory::Memory;
 use crate::controls::Controls;
 use std::cmp;
+use crate::ia::GameState::{InGame, GameOver, Hub};
 
 pub struct Ia{
     pub mat :[[bool; 10]; 18],
     pub old_mat : [[bool; 10]; 18],
     pub tet : PieceType,
     pub inputs : [Input; 30], //TODO Check le nombre max de coup ?
-    pub input_iterator : u8
+    pub input_iterator : u8,
+    pub state : GameState,
+    //child : [u8; 4]
+    //Jeux de coup ?
+    //Je commente car flemme
+}
+#[derive(Debug)]
+pub enum GameState {
+    Start,
+    Hub,
+    InGame,
+    GameOver,
 }
 
 
@@ -34,7 +47,19 @@ pub enum Input{
 
 impl Ia{
 
-
+    /*Check in which game state we are by using the tetris playground*/
+    pub fn check_game_state(&mut self) {
+        match self.state {
+            GameState::Start =>{if self.mat == [[false; 10]; 18] { self.state = Hub; }}
+            GameState::Hub => {
+                if self.mat == [[false; 10]; 18] { self.state = InGame; }
+            }
+            GameState::InGame => { if self.mat == [[true; 10]; 18] { self.state = GameOver; } }
+            GameState::GameOver => {
+                if self.mat == [[false; 10]; 18] { self.state = Hub; }
+            }
+        }
+    }
 
     pub fn default_inputs() -> [Input;30]{
         [Input::End,Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,
@@ -44,9 +69,9 @@ impl Ia{
     }
 
     pub fn get_tet_coord(tet: &PieceType, rot: u8) -> [[u8; 2];4]{
-        /* 
+        /*
             This function will take a tetromino and a rotation.
-            It will return an array filled with the coordinates of the tetromino in the good orientation 
+            It will return an array filled with the coordinates of the tetromino in the good orientation
         */
         match tet {
             PieceType::O => [[0,0],[1,0],[0,1],[1,1]],
@@ -91,7 +116,7 @@ impl Ia{
 
     pub fn print_field(&mut self, mat : &[[bool; 10]; 18]){
         /*
-            This function was used for the debugging, ti will print the playground 
+            This function was used for the debugging, ti will print the playground
         */
         println!("┌──────────┐");
         for i in 0..18{
@@ -226,7 +251,7 @@ impl Ia{
 
     pub fn print_tet(&self){
         /*
-            Another function used for the debugging: printing the tetromino shape 
+            Another function used for the debugging: printing the tetromino shape
         */
         print!("Current tet: ");
         match self.tet {
@@ -253,7 +278,7 @@ impl Ia{
             select: 1,
             start: 1
         };
-       
+
         match self.inputs[(self.input_iterator/2) as usize] {
             Input::Left => {
 
@@ -378,10 +403,12 @@ impl Ia{
 
         self.get_field(mem); //Generating the new screen
         if self.mat != self.old_mat {
+            self.check_game_state();
+            println!("The current game state is {:?}", self.state);
             self.get_next_tet(mem);
             best = self.get_best_inputs();
             self.duet_to_input(&best);
-            self.input_iterator = 0 //Reseting the parsing of inputs
+            self.input_iterator = 0 //Resetting the parsing of inputs
         }
     }
 
@@ -465,21 +492,21 @@ impl Ia{
     Generate the initial population :
     - first step : générer un individu.
     - Second step : ajouter l'individu a un "tableau" d'individu (appelé population).
-    - Third step : répéter l'étape 1 et 2 autant de fois que voulue. 
+    - Third step : répéter l'étape 1 et 2 autant de fois que voulue.
 
-    Compute fitness : 
-    - First step : On donne notre population initial a une fonction de score/classement. 
+    Compute fitness :
+    - First step : On donne notre population initial a une fonction de score/classement.
                    Elle retourne une population classé : de l'IA qui a le plus grand score tetris à celle qui à le moins bon.
-                   On a donc une Population classé. 
+                   On a donc une Population classé.
 
-    REPEAT => do while => idée ? 
+    REPEAT => do while => idée ?
 
     Selection made by hitler
-    - First stape : On a en entré notre population classé => 
-                    on va créer une nouvelle population composé des 3 première IA (3 ou plus ça dépend de ce qu'on veut) de notre population initial : 
-                    le meilleur individu de notre population initial sera copié dans une nouvelle population avant de passer au crossover. 
-    - Second step : Crossover : La fonction crossover prend en entré notre nouvelle population et notre population initiale 
-                                et va mixé notre IA0/IA1 , IA1/IA2 , IA0/IA2  avec du 50/50 
+    - First stape : On a en entré notre population classé =>
+                    on va créer une nouvelle population composé des 3 première IA (3 ou plus ça dépend de ce qu'on veut) de notre population initial :
+                    le meilleur individu de notre population initial sera copié dans une nouvelle population avant de passer au crossover.
+    - Second step : Crossover : La fonction crossover prend en entré notre nouvelle population et notre population initiale
+                                et va mixé notre IA0/IA1 , IA1/IA2 , IA0/IA2  avec du 50/50
     - Conclusion : on a une nouvelle population composé de notre meilleur individu de notre ancienne population et de trois nouveau individu issue du crossover.
 
     Mutation

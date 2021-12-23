@@ -16,8 +16,9 @@ use sdl2::gfx::framerate::FPSManager;
 use sdl2::pixels::PixelFormatEnum;
 use std::cmp;
 use std::path::Path;
-use crate::ia::{Ia, Input};
+use crate::ia::{Ia, Input, GameState};
 use crate::ia::PieceType;
+use crate::ia::GameState::Hub;
 
 #[macro_use]
 extern crate clap;
@@ -156,7 +157,8 @@ fn main() {
         old_mat: [[false; 10]; 18],
         tet: PieceType::None,
         inputs : Ia::default_inputs(),
-        input_iterator : 0
+        input_iterator : 0,
+        state: GameState::Start,
     };
 
     //crate::file_io::load_savestate(&config, &mut cpu, &mut mem.ram);
@@ -164,7 +166,7 @@ fn main() {
         window.clear();
         
 
-        
+
        ia.process_screen(&mut mem);
 
 
