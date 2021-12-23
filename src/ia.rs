@@ -211,7 +211,7 @@ impl Ia{
                     }
                 }
 
-                score = Ia::compute_score(&dummy_mat,1.5,0.5,0.5,0.5,0.5);
+                score = Ia::compute_score(&dummy_mat,1.5,0.5,0.5,0.5);
                 if score < best_score{
                     best_score = score;
                     best_move = x as i8;
@@ -274,7 +274,7 @@ impl Ia{
 
 
     pub fn get_inputs(&mut self) -> Controls {
-        let mut temp: Controls = Controls {
+        let mut buffer: Controls = Controls {
             up: 1,
             down: 1,
             left: 1,
@@ -290,7 +290,7 @@ impl Ia{
 
                 //println!("Left");
                 self.ready_next_move();
-                temp = Controls {
+        buffer = Controls {
                     up: 1,
                     down: 1,
                     left: 0,
@@ -304,7 +304,7 @@ impl Ia{
             Input::Right => {
                 //println!("Right");
                 self.ready_next_move();
-                temp = Controls {
+        buffer = Controls {
                     up: 1,
                     down: 1,
                     left: 1,
@@ -318,7 +318,7 @@ impl Ia{
             Input::A => {
                 //println!("A");
                 self.ready_next_move();
-                temp = Controls {
+        buffer = Controls {
                     up: 1,
                     down: 1,
                     left: 1,
@@ -331,7 +331,7 @@ impl Ia{
             },
             Input::None => {
                 self.ready_next_move();
-                temp = Controls {
+        buffer = Controls {
                     up: 1,
                     down: 1,
                     left: 1,
@@ -345,7 +345,7 @@ impl Ia{
             Input::Down => {
                 //println!("Down");
                 self.ready_next_move();
-                temp = Controls {
+        buffer = Controls {
                     up: 1,
                     down: 0,
                     left: 1,
@@ -370,7 +370,7 @@ impl Ia{
                 }
             },
             Input::End => {
-                temp = Controls {
+        buffer = Controls {
                     up: 1,
                     down: 0,
                     left: 1,
@@ -382,7 +382,7 @@ impl Ia{
                 }
             },
         }
-        return temp;
+        return buffer;
     }
 
     pub fn duet_to_input(&mut self, duet: &[i8;2]) {
@@ -452,7 +452,7 @@ impl Ia{
 
 
     /*This function will take a position and then compute a score. Lower is the score better is the position.*/
-    fn compute_score(matrix : &[[bool; 10]; 18], w1:f32,w2:f32,w3:f32,w4:f32,w5:f32) -> f32{
+    fn compute_score(matrix : &[[bool; 10]; 18], w1:f32,w2:f32,w3:f32,w4:f32) -> f32{
         /*
         The final score depends on the following parameter
         gaps = number of gap
@@ -466,7 +466,7 @@ impl Ia{
         let mut min_height :i8 = 18;
         let mut max_height:i8 = 0;
         let mut max_side_diff:i8 = 0;
-        let mut col_height:[i8;10] =[0,0,0,0,0,0,0,0,0,0];
+        let mut col_height:[i8;10] = [0,0,0,0,0,0,0,0,0,0];
 
         for column in 0..10{
             for raw in 0..18{
@@ -497,20 +497,85 @@ impl Ia{
         }
         standart_deviation=(standart_deviation*0.1).sqrt();
         let max_diff = max_height - min_height;
-        (gaps as f32 * w1 + height_mean as f32 * w2 + max_diff as f32 * w3 + max_side_diff as f32 *w4 +standart_deviation*w5) as f32 // score
+        (gaps as f32 * w1 + max_diff as f32 * w2 + max_side_diff as f32 *w3 +standart_deviation * w4) as f32 // score
     }
 
-    /*fn create_child(parent1:[f32;6],parent2:[f32;6])->[f32;6]{
+    /* This funtion has to goal to create a population */
+    fn create_population()->[[f32;5];16]{
+
+        let mut individual0 : [f32;5] = [0.0,0.0,0.0,0.0,0.0];
+        let mut individual1 : [f32;5] = [0.0,0.0,0.0,1.0,0.0];
+        let mut individual2 : [f32;5] = [0.0,0.0,1.0,0.0,0.0];
+        let mut individual3 : [f32;5] = [0.0,0.0,1.0,1.0,0.0];
+        let mut individual4 : [f32;5] = [0.0,1.0,0.0,0.0,0.0];
+        let mut individual5 : [f32;5] = [0.0,1.0,0.0,1.0,0.0];
+        let mut individual6 : [f32;5] = [0.0,1.0,1.0,0.0,0.0];
+        let mut individual7 : [f32;5] = [0.0,1.0,1.0,1.0,0.0];
+        let mut individual8 : [f32;5] = [1.0,0.0,0.0,0.0,0.0];
+        let mut individual9 : [f32;5] = [1.0,0.0,0.0,1.0,0.0];
+        let mut individual10 : [f32;5] = [1.0,0.0,1.0,0.0,0.0];
+        let mut individual11 : [f32;5] = [1.0,0.0,1.0,1.0,0.0];
+        let mut individual12 : [f32;5] = [1.0,1.0,0.0,0.0,0.0];
+        let mut individual13 : [f32;5] = [1.0,1.0,0.0,1.0,0.0];
+        let mut individual14 : [f32;5] = [1.0,1.0,1.0,0.0,0.0];
+        let mut individual15 : [f32;5] = [1.0,1.0,1.0,1.0,0.0];
+        let mut population : [[f32;5];16] = [individual0,individual1,individual2,individual3,individual4,individual5,individual6,individual7,individual8,individual9,individual10,individual11,individual12,individual13,individual14,individual15];
+        return population;
+
+    }
+
+    fn population_ranking(population : &mut [[f32;5];16])->&[[f32;5];16]{
+        
+        let mut buffer : [f32;5];
+        for i in  1..17{ // repeat N time
+            for j in 0..15{
+                if population[j][4] > population[j+1][4]{
+                    buffer = population[j];
+                    population[j]= population[j+1];
+                    population[j+1] = buffer;
+                }
+
+
+            }
+        }
+        return population;
+
+    fn create_new_pop(pop : &mut [[f32;5];16])->&[[f32;5];16]{
+        let mut active_population : usize = 16;
+        for individu in 0..16{
+            if pop[individu][0]==0.0 && active_population>individu{
+                active_population=individu-2;
+            }
+        }
+
+        if active_population==1{
+            println!("The best parameter are : {:?}",pop[1]);
+        }else{
+            for i in 0..5{
+                pop[active_population+1][i]==0.0;
+            }
+            while active_population<1{
+                pop[active_population+1]=Ia::create_child(pop[active_population],pop[active_population-1]);
+            }
+        }
+        return pop;
+    }
+
+    fn create_child(parent1:[f32;5],parent2:[f32;5])->[f32;5]{
         /*
             This function take two IA "parent" and create a child with the mean of them.
             The last case in the child is for his future score.
         */
-        let mut child : [f32;6];
+        let mut child : [f32;5] = [0.0,0.0,0.0,0.0,0.0];
+        let mut weight1 :f32;
+        let mut weight2 :f32;
+        weight1 = parent1[4] * 100.0 /(parent1[4]+parent2[4]);
+        weight2 = 100.0 - weight1;
         for i in 0..4{
-            child[i] = (parent1[i] + parent2[i])/2;
+            child[i] = parent1[i] * weight1 + parent2[i] * weight2;
         }
         return child;
-    }*/
+    }
 
 
 }
