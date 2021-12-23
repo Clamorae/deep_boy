@@ -394,7 +394,7 @@ impl Ia{
 
 
     /*This function will take a position and then compute a score. Lower is the score better is the position.*/
-    fn compute_score(matrix : &[[bool; 10]; 18], w1:f32,w2:f32,w3:f32,w4:f32,w5:f32) -> f32{
+    fn compute_score(matrix : &[[bool; 10]; 18], w1:f32,w2:f32,w3:f32,w4:f32) -> f32{
         /*
         The final score depends on the following parameter
         gaps = number of gap
@@ -439,20 +439,24 @@ impl Ia{
         }
         standart_deviation=(standart_deviation*0.1).sqrt();
         let max_diff = max_height - min_height;
-        (gaps as f32 * w1 + height_mean as f32 * w2 + max_diff as f32 * w3 + max_side_diff as f32 *w4 +standart_deviation*w5) as f32 // score
+        (gaps as f32 * w1 + max_diff as f32 * w2 + max_side_diff as f32 *w3 +standart_deviation * w4) as f32 // score
     }
 
-    /*fn create_child(parent1:[f32;6],parent2:[f32;6])->[f32;6]{
+    fn create_child(parent1:[f32;5],parent2:[f32;5])->[f32;5]{
         /*
             This function take two IA "parent" and create a child with the mean of them.
             The last case in the child is for his future score.
         */
-        let mut child : [f32;6];
+        let mut child : [f32;5];
+        let mut weight1 :f32
+        let mut weight2 :f32
+        weight1 = parent1[4] * 100 /(parent1[4]+parent2[4]);
+        weight2 = 100 - weight1;
         for i in 0..4{
-            child[i] = (parent1[i] + parent2[i])/2;
+            child[i] = (parent1[i] * weight1 + parent2[i] * weight2);
         }
         return child;
-    }*/
+    }
 
 
 }
