@@ -481,6 +481,26 @@ impl Ia{
             }
         }
         return population;
+
+    fn create_new_pop(pop : &mut [[f32;5];16])->&[[f32;5];16]{
+        let mut active_population : usize = 16;
+        for individu in 0..16{
+            if pop[individu][0]==0.0 && active_population>individu{
+                active_population=individu-2;
+            }
+        }
+
+        if active_population==1{
+            println!("The best parameter are : {:?}",pop[1]);
+        }else{
+            for i in 0..5{
+                pop[active_population+1][i]==0.0;
+            }
+            while active_population<1{
+                pop[active_population+1]=Ia::create_child(pop[active_population],pop[active_population-1]);
+            }
+        }
+        return pop;
     }
 
     fn create_child(parent1:[f32;5],parent2:[f32;5])->[f32;5]{
@@ -494,7 +514,7 @@ impl Ia{
         weight1 = parent1[4] * 100.0 /(parent1[4]+parent2[4]);
         weight2 = 100.0 - weight1;
         for i in 0..4{
-            child[i] = (parent1[i] * weight1 + parent2[i] * weight2);
+            child[i] = parent1[i] * weight1 + parent2[i] * weight2;
         }
         return child;
     }
