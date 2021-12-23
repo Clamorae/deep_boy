@@ -242,7 +242,7 @@ impl Ia{
 
 
     pub fn get_inputs(&mut self) -> Controls {
-        let mut temp: Controls = Controls {
+        let mut buffer: Controls = Controls {
             up: 1,
             down: 1,
             left: 1,
@@ -258,7 +258,7 @@ impl Ia{
 
                 //println!("Left");
                 self.ready_next_move();
-                temp = Controls {
+        buffer = Controls {
                     up: 1,
                     down: 1,
                     left: 0,
@@ -272,7 +272,7 @@ impl Ia{
             Input::Right => {
                 //println!("Right");
                 self.ready_next_move();
-                temp = Controls {
+        buffer = Controls {
                     up: 1,
                     down: 1,
                     left: 1,
@@ -286,7 +286,7 @@ impl Ia{
             Input::A => {
                 //println!("A");
                 self.ready_next_move();
-                temp = Controls {
+        buffer = Controls {
                     up: 1,
                     down: 1,
                     left: 1,
@@ -299,7 +299,7 @@ impl Ia{
             },
             Input::None => {
                 self.ready_next_move();
-                temp = Controls {
+        buffer = Controls {
                     up: 1,
                     down: 1,
                     left: 1,
@@ -313,7 +313,7 @@ impl Ia{
             Input::Down => {
                 //println!("Down");
                 self.ready_next_move();
-                temp = Controls {
+        buffer = Controls {
                     up: 1,
                     down: 0,
                     left: 1,
@@ -325,7 +325,7 @@ impl Ia{
                 }
             },
             Input::End => {
-                temp = Controls {
+        buffer = Controls {
                     up: 1,
                     down: 0,
                     left: 1,
@@ -337,7 +337,7 @@ impl Ia{
                 }
             },
         }
-        return temp;
+        return buffer;
     }
 
     pub fn duet_to_input(&mut self, duet: &[i8;2]) {
@@ -443,7 +443,7 @@ impl Ia{
     }
 
     /* This funtion has to goal to create a population */
-    fn create_population(){
+    fn create_population()->[[f32;5];16]{
 
         let mut individual0 : [f32;5] = [0.0,0.0,0.0,0.0,0.0];
         let mut individual1 : [f32;5] = [0.0,0.0,0.0,1.0,0.0];
@@ -464,6 +464,23 @@ impl Ia{
         let mut population : [[f32;5];16] = [individual0,individual1,individual2,individual3,individual4,individual5,individual6,individual7,individual8,individual9,individual10,individual11,individual12,individual13,individual14,individual15];
         return population;
 
+    }
+
+    fn population_ranking(population : &mut [[f32;5];16])->&[[f32;5];16]{
+        
+        let mut buffer : [f32;5];
+        for i in  1..17{ // repeat N time
+            for j in 0..15{
+                if population[j][4] > population[j+1][4]{
+                    buffer = population[j];
+                    population[j]= population[j+1];
+                    population[j+1] = buffer;
+                }
+
+
+            }
+        }
+        return population;
     }
 
     fn create_child(parent1:[f32;5],parent2:[f32;5])->[f32;5]{
