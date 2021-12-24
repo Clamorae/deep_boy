@@ -12,11 +12,12 @@ pub struct Ia{
     pub inputs : [Input; 30], //TODO Check le nombre max de coup ?
     pub input_iterator : u8,
     pub state : GameState,
-    //child : [u8; 4]
-    //Jeux de coup ?
-    //Je commente car flemme
+    pub pop : [[f32;5];16],
+    pub pop_iterator : usize,
+    pub number_of_game : u8, //Number of game a given individual has played (up to 10)
+    pub max_iteration : usize
 }
-#[derive(Debug)]
+#[derive(Debug)] //TODO
 pub enum GameState {
     Start,
     TitleScreen,
@@ -51,19 +52,42 @@ pub enum Input{
 
 impl Ia{
 
+    /*This function will go through the emulator memory (stored in little-endian BCD)
+     and fetch us tetris score*/
+    fn get_score(&mut self, mem: &Memory) -> u32{
+        let first_digit : u16 = mem.read(0xC0A2) as u16; //11 00 00
+        let snd_digit: u16 = mem.read(0xC0A1) as u16; // 00 11 00
+        let lst_digit : u16 = mem.read(0xC0A0) as u16; // 00 00 11
+        (first_digit * 10000 + snd_digit * 100 + lst_digit) as u32
+    }
+
+    /*This function handle the wrapping of the pop iterator
+    it returns true if we parsed the whole array*/
+    pub fn pop_iterator(&mut self) -> bool{
+        if self.pop_iterator == self.max_iteration {
+            self.pop_iterator = 0;
+            true
+        }else{
+            self.pop_iterator+=1;
+            false
+        }
+    }
+
     /*Check in which game state we are by using the tetris playground*/
-    pub fn check_game_state(&mut self) {
+    pub fn check_game_state(&mut self, mem : &Memory) {
         match self.state {
             GameState::Start => {if self.mat == state::TITLE_SCREEN {self.state = GameState::TitleScreen;}}
             GameState::TitleScreen => {if self.mat == state::GAME_SELECT {self.state = GameState::GameSelect ;}}
-            GameState::GameSelect => {
-                if self.mat == state::HUB {self.state = GameState::Hub;}else { println!("this is the HUB thinggy :");self.print_field(&state::HUB);
-                    println!("this is the acctual matrice :");
-                    self.print_field(&self.mat);
+            GameState::GameSelect => { if self.mat == state::HUB {self.state = GameState::Hub;} }
+            GameState::Hub => {if self.mat == [[false;10];18] {self.state = GameState::InGame;}}
+            GameState::InGame => {
+                if self.mat == state::GAME_OVER {
+                    self.state = GameState::GameOver;
+                    self.pop[self.pop_iterator][4] += (self.get_score(mem)) as f32;
+                    self.number_of_game+= 1;
+                    println!("This is the {} game",self.number_of_game);
                 }
             }
-            GameState::Hub => {if self.mat == [[false;10];18] {self.state = GameState::InGame;}}
-            GameState::InGame => {if self.mat == state::GAME_OVER {self.state = GameState::GameOver;}}
             GameState::GameOver => {if self.mat == state::HUB {self.state = GameState::Hub;}}
         }
     }
@@ -136,7 +160,7 @@ impl Ia{
                 }
             }
             print!("|");
-            println!("");
+            println!();
         }
         println!("└──────────┘");
     }
@@ -211,7 +235,7 @@ impl Ia{
                     }
                 }
 
-                score = Ia::compute_score(&dummy_mat,1.5,0.5,0.5,0.5);
+                score = Ia::compute_score(&dummy_mat,self.pop[self.pop_iterator][0],self.pop[self.pop_iterator][1],self.pop[self.pop_iterator][2],self.pop[self.pop_iterator][3]);
                 if score < best_score{
                     best_score = score;
                     best_move = x as i8;
@@ -221,8 +245,8 @@ impl Ia{
                 }
             }
         }
-        self.print_field(&best_mat);
-        println!("x:{}  move:{}  rot:{}",best_move,best_move - Ia::get_offset(&self.tet,best_rot as u8), best_rot);
+        //self.print_field(&best_mat); //TODO VIRER CA?
+        //println!("x:{}  move:{}  rot:{}",best_move,best_move - Ia::get_offset(&self.tet,best_rot as u8), best_rot);
         return [best_move - Ia::get_offset(&self.tet,best_rot as u8), best_rot as i8];
     }
 
@@ -423,7 +447,7 @@ impl Ia{
         self.get_field(mem); //Generating the new screen
 
         if self.mat != self.old_mat {
-            self.check_game_state();
+            self.check_game_state(mem);
             match self.state {
                 GameState::InGame => {
                     self.get_next_tet(mem);
@@ -431,17 +455,37 @@ impl Ia{
                     self.duet_to_input(&best);
                     self.input_iterator = 0 //Resetting the parsing of inputs
                 }
+                GameState::Hub => {
+                    if self.number_of_game == 10{
+                        self.pop[self.pop_iterator][4] /= (10) as f32; //Making the mean of the score
+                        self.number_of_game = 0;
+                        if self.pop_iterator(){ // If all the pop has played
+                            //We give each individual a rank
+                            self.population_ranking();
+                            //And we create a new pop based on the best one
+                            self.create_new_pop();
+                        }
+                        println!("We are a the {} guy",self.pop_iterator);
+                    }
+                    self.next_menu()
+                }
                 _ =>{
-                    self.inputs[0] = Input::Start;
-                    self.inputs[1] = Input::None;
-                    self.inputs[3] = Input::Start;
-                    self.inputs[29] = Input::End;
-                    self.input_iterator = 0
+                    self.next_menu()
                 }
             }
         }
     }
 
+    fn next_menu(&mut self){ //TODO RANDOM START AND FOR ALL STATE
+        self.inputs[0] = Input::Start;
+        self.inputs[1] = Input::None;
+        self.inputs[3] = Input::Start;
+        self.inputs[29] = Input::End;
+        self.input_iterator = 0
+    }
+
+    /*This function help us iterate over the iputs */
+    //TODO ENGULER PAUL
     pub fn ready_next_move(&mut self) {
         if self.input_iterator == 255{
             self.input_iterator = 0
@@ -500,8 +544,8 @@ impl Ia{
         (gaps as f32 * w1 + max_diff as f32 * w2 + max_side_diff as f32 *w3 +standart_deviation * w4) as f32 // score
     }
 
-    /* This funtion has to goal to create a population */
-    fn create_population()->[[f32;5];16]{
+    /* This function has to goal to create a population */
+    pub(crate) fn create_population() ->[[f32;5];16]{
 
         let mut individual0 : [f32;5] = [0.0,0.0,0.0,0.0,0.0];
         let mut individual1 : [f32;5] = [0.0,0.0,0.0,1.0,0.0];
@@ -524,39 +568,35 @@ impl Ia{
 
     }
 
-    fn population_ranking(population : &mut [[f32;5];16])->&[[f32;5];16] {
+    fn population_ranking(&mut self){
         let mut buffer: [f32; 5];
         for i in 1..17 { // repeat N time
             for j in 0..15 {
-                if population[j][4] > population[j + 1][4] {
-                    buffer = population[j];
-                    population[j] = population[j + 1];
-                    population[j + 1] = buffer;
+                if self.pop[j][4] > self.pop[j + 1][4] {
+                    buffer = self.pop[j];
+                    self.pop[j] = self.pop[j + 1];
+                    self.pop[j + 1] = buffer;
                 }
             }
         }
-        return population;
     }
 
-    fn create_new_pop(pop : &mut [[f32;5];16])->&[[f32;5];16]{
-        let mut active_population : usize = 14;
-        for individu in 0..16{
-            if pop[individu][4]==0.0 && active_population>individu{
-                active_population=individu-2;
-            }
-        }
+    fn create_new_pop(&mut self){
+        
+        self.max_iteration -=1;
+        let mut active_population : usize = self.max_iteration;
 
         if active_population==1{
-            println!("The best parameter are : {:?}",pop[0]);
+            println!("The best parameter are : {:?}",self.pop[0]);
         }else{
             for i in 0..5{
-                pop[active_population+1][i]==0.0;
+                self.pop[active_population+1][i]=0.0;
             }
             while active_population>0{
-                pop[active_population+1]=Ia::create_child(pop[active_population],pop[active_population-1]);
+                self.pop[active_population+1]=Ia::create_child(self.pop[active_population],self.pop[active_population-1]);
             }
         }
-        return pop;
+        println!("{:?}",self.pop);
     }
 
     fn create_child(parent1:[f32;5],parent2:[f32;5])->[f32;5]{
