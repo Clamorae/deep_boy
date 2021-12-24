@@ -539,20 +539,20 @@ impl Ia{
     }
 
     fn create_new_pop(pop : &mut [[f32;5];16])->&[[f32;5];16]{
-        let mut active_population : usize = 16;
+        let mut active_population : usize = 14;
         for individu in 0..16{
-            if pop[individu][0]==0.0 && active_population>individu{
+            if pop[individu][4]==0.0 && active_population>individu{
                 active_population=individu-2;
             }
         }
 
         if active_population==1{
-            println!("The best parameter are : {:?}",pop[1]);
+            println!("The best parameter are : {:?}",pop[0]);
         }else{
             for i in 0..5{
                 pop[active_population+1][i]==0.0;
             }
-            while active_population<1{
+            while active_population>0{
                 pop[active_population+1]=Ia::create_child(pop[active_population],pop[active_population-1]);
             }
         }
