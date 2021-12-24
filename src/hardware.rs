@@ -327,7 +327,7 @@ impl Gpu {
             mat = &mut self.bg_matrix;
             palette = mem.read(0xFF47);
         }
-        array[0] = (palette & 0b00000011);
+        array[0] = palette & 0b00000011;
         array[1] = (palette & 0b00001100) >> 2;
         array[2] = (palette & 0b00110000) >> 4;
         array[3] = (palette & 0b11000000) >> 6;

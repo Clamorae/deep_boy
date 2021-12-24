@@ -160,6 +160,9 @@ fn main() {
         inputs : Ia::default_inputs(),
         input_iterator : 0,
         state: GameState::Start,
+        pop : Ia::create_population(),
+        pop_iterator: 0,
+        number_of_game: 0
     };
 
     //crate::file_io::load_savestate(&config, &mut cpu, &mut mem.ram);
@@ -184,8 +187,8 @@ fn main() {
         gpu.build_bg(&mem);
         gpu.build_window(&mem);
         gpu.build_sprite(&mem);
-        if config.framerate > 0 {
-            frm.delay();
-        }
+        //if config.framerate > 0 {
+       //     frm.delay();
+        //}
     }
 }
