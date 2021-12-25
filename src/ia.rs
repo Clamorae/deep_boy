@@ -572,17 +572,18 @@ impl Ia{
         let mut buffer: [f32; 5];
         for i in 1..17 { // repeat N time
             for j in 0..15 {
-                if self.pop[j][4] > self.pop[j + 1][4] {
+                if self.pop[j][4] < self.pop[j + 1][4] {
                     buffer = self.pop[j];
                     self.pop[j] = self.pop[j + 1];
                     self.pop[j + 1] = buffer;
                 }
             }
         }
+        println!("{:?}",self.pop);
     }
 
     fn create_new_pop(&mut self){
-        
+        println!("test");
         self.max_iteration -=1;
         let mut active_population : usize = self.max_iteration;
 
@@ -594,7 +595,10 @@ impl Ia{
             }
             while active_population>0{
                 self.pop[active_population+1]=Ia::create_child(self.pop[active_population],self.pop[active_population-1]);
+                active_population -=1;
             }
+            self.pop[0][4]=0.0;
+            self.pop[1][4]=0.0;
         }
         println!("{:?}",self.pop);
     }
@@ -607,10 +611,11 @@ impl Ia{
         let mut child : [f32;5] = [0.0,0.0,0.0,0.0,0.0];
         let mut weight1 :f32;
         let mut weight2 :f32;
-        weight1 = parent1[4] * 100.0 /(parent1[4]+parent2[4]);
+        let total_score : f32 = parent1[4]+parent2[4];
+        weight1 = parent1[4] *100.0 /(total_score);
         weight2 = 100.0 - weight1;
         for i in 0..4{
-            child[i] = parent1[i] * weight1 + parent2[i] * weight2;
+            child[i] = parent1[i] * weight1/100.0 + parent2[i] * weight2/100.0;
         }
         return child;
     }
