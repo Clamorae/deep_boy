@@ -4,6 +4,7 @@ use crate::controls::Controls;
 use std::cmp;
 use crate::ia::GameState::{InGame, GameOver, Hub, TitleScreen};
 use crate::state;
+use rand::prelude::*;
 
 pub struct Ia{
     pub mat :[[bool; 10]; 18],
@@ -85,7 +86,7 @@ impl Ia{
                     self.state = GameState::GameOver;
                     self.pop[self.pop_iterator][4] += (self.get_score(mem)) as f32;
                     self.number_of_game+= 1;
-                    println!("This is the {} game",self.number_of_game);
+                    println!("This is the {} game.",self.number_of_game);
                 }
             }
             GameState::GameOver => {if self.mat == state::HUB {self.state = GameState::Hub;}}
@@ -564,6 +565,13 @@ impl Ia{
         let mut individual14 : [f32;5] = [1.0,1.0,1.0,0.0,0.0];
         let mut individual15 : [f32;5] = [1.0,1.0,1.0,1.0,0.0];
         let mut population : [[f32;5];16] = [individual0,individual1,individual2,individual3,individual4,individual5,individual6,individual7,individual8,individual9,individual10,individual11,individual12,individual13,individual14,individual15];
+        let mut rng = rand::thread_rng();
+        for i in 0..16{
+            for j in 0..4{
+                population[i][j]= rng.gen();
+            }
+        }
+        
         return population;
 
     }
@@ -583,20 +591,29 @@ impl Ia{
     }
 
     fn create_new_pop(&mut self){
+        let mut rng = rand::thread_rng();
         println!("test");
         self.max_iteration -=1;
-        let mut active_population : usize = self.max_iteration;
+        let mut active_population : usize = self.max_iteration-1;
 
-        if active_population==1{
+        if active_population==0{
             println!("The best parameter are : {:?}",self.pop[0]);
         }else{
+
             for i in 0..5{
                 self.pop[active_population+1][i]=0.0;
             }
+
+            let range : usize = rng.gen_range(0..4);
+            
             while active_population>0{
                 self.pop[active_population+1]=Ia::create_child(self.pop[active_population],self.pop[active_population-1]);
+                if active_population== self.max_iteration-1{
+                    self.pop[active_population+1][range]=rng.gen();
+                }
                 active_population -=1;
             }
+
             self.pop[0][4]=0.0;
             self.pop[1][4]=0.0;
         }
