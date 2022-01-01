@@ -181,5 +181,8 @@ fn main() {
         gpu.build_bg(&mem);
         gpu.build_window(&mem);
         gpu.build_sprite(&mem);
+        if config.framerate > 0 {
+            frm.delay();
+        }
     }
 }
