@@ -244,8 +244,8 @@ impl Ia{
                         dummy_mat[(y_ite-1+tet_coord[i][1]) as usize][(x+(tet_coord[i][0] as i8)) as usize] = true;
                     }
                 }
-
-                score = Ia::compute_score(&dummy_mat,self.pop[self.pop_iterator][0],self.pop[self.pop_iterator][1],self.pop[self.pop_iterator][2],self.pop[self.pop_iterator][3]);
+                //manually added the value
+                score = Ia::compute_score(&dummy_mat,0.95,0.1,0.4,0.7);
                 if score < best_score{
                     best_score = score;
                     best_move = x as i8;
@@ -468,6 +468,9 @@ impl Ia{
                     self.input_iterator = 0 //Resetting the parsing of inputs
                 }
                 GameState::Hub => {
+
+                    //Patched so it use the manually add individual
+                    /*
                     if self.number_of_game == 10{
                         self.pop[self.pop_iterator][4] /= (10) as f32; //Making the mean of the score
                         self.number_of_game = 0;
@@ -478,7 +481,8 @@ impl Ia{
                             self.create_new_pop();
                         }
                         println!("We are a the {} individual",self.pop_iterator);
-                    }
+
+                    }//Patched so it use the manually add individual*/
                     self.next_menu()
                 }
                 _ =>{
