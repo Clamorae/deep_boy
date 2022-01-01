@@ -10,7 +10,7 @@ pub struct Ia{
     pub mat :[[bool; 10]; 18],
     pub old_mat : [[bool; 10]; 18],
     pub tet : PieceType,
-    pub inputs : [Input; 30], //TODO Check le nombre max de coup ?
+    pub inputs : [Input; 30],
     pub input_iterator : u8,
     pub state : GameState,
     pub pop : [[f32;5];16],
@@ -18,7 +18,6 @@ pub struct Ia{
     pub number_of_game : u8, //Number of game a given individual has played (up to 10)
     pub max_iteration : usize
 }
-#[derive(Debug)] //TODO
 pub enum GameState {
     Start,
     TitleScreen,
@@ -27,7 +26,6 @@ pub enum GameState {
     InGame,
     GameOver,
 }
-
 
 pub enum PieceType{
     I,
@@ -92,7 +90,9 @@ impl Ia{
             GameState::GameOver => {if self.mat == state::HUB {self.state = GameState::Hub;}}
         }
     }
-
+    /*
+        Generate an list of 30 Inputs::None
+    */
     pub fn default_inputs() -> [Input;30]{
         [Input::End,Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,
         Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,Input::None,
@@ -168,7 +168,8 @@ impl Ia{
 
     pub fn get_offset(tet: &PieceType, rot: u8) -> i8 {
         /*
-            This function will return for each piece the number of column between the piece and the left wall
+            This function will return for each piece the number of column between the
+            piece and the left wall
         */
         match tet{
             PieceType::O => 4,
@@ -184,7 +185,11 @@ impl Ia{
         }
     }
 
-    pub fn check_state(&self, tet: &PieceType, rot: u8, x:i8, y:i8) -> bool {//TODO comment
+    /*
+        This function will check if it is possible to fit a given place a a given place of the
+        playfield
+    */
+    pub fn check_state(&self, tet: &PieceType, rot: u8, x:i8, y:i8) -> bool {
         let tet_coord : [[u8; 2];4] = Ia::get_tet_coord(&tet, rot);
         for i in 0..4{
             if self.mat[(y + (tet_coord[i][1])as i8) as usize][(x + (tet_coord[i][0]) as i8) as usize] {
@@ -194,7 +199,11 @@ impl Ia{
         }
         return true;
     }
-
+    /*
+        This function will go trough all the possible action and will return
+        the input in form of a duet (1st number is the number the number of press on the d pad
+        a positive number mean right a négative left. The 2nd number is the number of rotation.
+    */
     pub fn get_best_inputs(&mut self) -> [i8; 2] {
 
         let mut best_move: i8 = 0;
@@ -246,8 +255,8 @@ impl Ia{
                 }
             }
         }
-        //self.print_field(&best_mat); //TODO VIRER CA?
-        //println!("x:{}  move:{}  rot:{}",best_move,best_move - Ia::get_offset(&self.tet,best_rot as u8), best_rot);
+        self.print_field(&best_mat);
+        println!("x:{}  move:{}  rot:{}",best_move,best_move - Ia::get_offset(&self.tet,best_rot as u8), best_rot);
         return [best_move - Ia::get_offset(&self.tet,best_rot as u8), best_rot as i8];
     }
 
@@ -262,11 +271,11 @@ impl Ia{
         }
     }
 
-
+    /*
+        Get the shape of the next tetromino by checking the memory
+    */
     pub fn get_next_tet(&mut self, mem: &mut Memory){
-        /*
-            Get the shape of the next tetromino by checking the memory
-        */
+
         match mem.read(0xC213){
             12 => self.tet = PieceType::O,
             24 => self.tet = PieceType::T,
@@ -279,11 +288,11 @@ impl Ia{
 
         }
     }
-
+    /*
+        Another function used for the debugging: printing the tetromino shape
+    */
     pub fn print_tet(&self){
-        /*
-            Another function used for the debugging: printing the tetromino shape
-        */
+
         print!("Current tet: ");
         match self.tet {
             PieceType::O => println!("O"),
@@ -297,7 +306,9 @@ impl Ia{
         }
     }
 
-
+    /*
+        This function takes the input in the input field of ia and will translate it to the emulator
+    */
     pub fn get_inputs(&mut self) -> Controls {
         let mut buffer: Controls = Controls {
             up: 1,
@@ -409,14 +420,14 @@ impl Ia{
         }
         return buffer;
     }
-
+    /*
+        This function will take a duet made with two element made by get_best_position()
+        The first one is the piece position
+        The second one contain the piece orientation
+        The function translates the data into a list of input
+    */
     pub fn duet_to_input(&mut self, duet: &[i8;2]) {
-        /*
-            This function will take a duet made with two element
-            The first one is the piece position
-            The second one contain the piece orientation
-            The function translates the data into a list of input
-        */
+
         let mut dir = duet[0];
         let mut rot = duet[1];
         for i in 4..14{
@@ -466,7 +477,7 @@ impl Ia{
                             //And we create a new pop based on the best one
                             self.create_new_pop();
                         }
-                        println!("We are a the {} guy",self.pop_iterator);
+                        println!("We are a the {} individual",self.pop_iterator);
                     }
                     self.next_menu()
                 }
@@ -476,8 +487,10 @@ impl Ia{
             }
         }
     }
-
-    fn next_menu(&mut self){ //TODO RANDOM START AND FOR ALL STATE
+    /*
+        This function generate the input so the ia can get to the next menu
+    */
+    fn next_menu(&mut self){
         self.inputs[0] = Input::Start;
         self.inputs[1] = Input::None;
         self.inputs[3] = Input::Start;
@@ -485,8 +498,7 @@ impl Ia{
         self.input_iterator = 0
     }
 
-    /*This function help us iterate over the iputs */
-    //TODO ENGULER PAUL
+    /*This function help us iterate over the inputs */
     pub fn ready_next_move(&mut self) {
         if self.input_iterator == 255{
             self.input_iterator = 0
@@ -575,10 +587,12 @@ impl Ia{
         return population;
 
     }
-
+    /*
+        This function rank the population based on their score (the 5th parameter)
+    */
     fn population_ranking(&mut self){
         let mut buffer: [f32; 5];
-        for i in 1..17 { // repeat N time
+        for i in 1..17 { // repeat N time255
             for j in 0..15 {
                 if self.pop[j][4] < self.pop[j + 1][4] {
                     buffer = self.pop[j];
@@ -589,7 +603,9 @@ impl Ia{
         }
         println!("{:?}",self.pop);
     }
-
+    /*
+        This function generate the new generation of a population
+    */
     fn create_new_pop(&mut self){
         let mut rng = rand::thread_rng();
         println!("test");
@@ -636,37 +652,4 @@ impl Ia{
         }
         return child;
     }
-
-
 }
-
-/*fn genetic(){
-    /*
-
-    Generate the initial population :
-    - first step : générer un individu.
-    - Second step : ajouter l'individu a un "tableau" d'individu (appelé population).
-    - Third step : répéter l'étape 1 et 2 autant de fois que voulue.
-
-    Compute fitness :
-    - First step : On donne notre population initial a une fonction de score/classement.
-                   Elle retourne une population classé : de l'IA qui a le plus grand score tetris à celle qui à le moins bon.
-                   On a donc une Population classé.
-
-    REPEAT => do while => idée ?
-
-    Selection made by hitler
-    - First stape : On a en entré notre population classé =>
-                    on va créer une nouvelle population composé des 3 première IA (3 ou plus ça dépend de ce qu'on veut) de notre population initial :
-                    le meilleur individu de notre population initial sera copié dans une nouvelle population avant de passer au crossover.
-    - Second step : Crossover : La fonction crossover prend en entré notre nouvelle population et notre population initiale
-                                et va mixé notre IA0/IA1 , IA1/IA2 , IA0/IA2  avec du 50/50
-    - Conclusion : on a une nouvelle population composé de notre meilleur individu de notre ancienne population et de trois nouveau individu issue du crossover.
-
-    Mutation
-        how to adapt?
-        Compute fitness
-        launch ten game and get stats foreach
-    UNTIL population has converged
-    */
-}*/

@@ -1,9 +1,9 @@
 [package]
 name = "rust_boy"
 version = "1.0.0"
-authors = ["Guillaume <guiguiruff@gmail.com>", "Paul <paul.caillier@utbm.fr>"]
+authors = ["Guillaume <guillaume.ruff@utbm.fr>", "Paul <paul.caillier@utbm.fr>, Eleanore <Eleanore.renault@utbm.fr>, Quentin <quentin.trombini@utbm.fr>"]
 edition = "2018"
-description = "A gameboy emulator in Rust"
+description = "A gameboy emulator in Rus with a build in ia for tetris"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
@@ -11,8 +11,6 @@ rand = "0.8.3"
 clap = "~2.33"
 serde = { version = "~1.0", features = ["derive"] }
 bincode = "~1.3"
-inline-python = "0.8.0"
-
 
 [dependencies.sdl2]
 version = "0.34"

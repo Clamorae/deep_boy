@@ -152,7 +152,7 @@ fn main() {
         frm.set_framerate(config.framerate)
             .expect("Couldn't set framerate");
     }
-
+    //Generating the Ia Structure
     let mut ia = ia::Ia {
         mat: [[false; 10]; 18],
         old_mat: [[false; 10]; 18],
@@ -171,25 +171,15 @@ fn main() {
         window.clear();
         
 
-
-       ia.process_screen(&mut mem);
-
-
-
-
-
+        ia.process_screen(&mut mem); // passing the screen to the IA
         controls.get_keyboard(&config, &mut cpu, &mut mem, &mut window);
-        controls.add_controls(ia.get_inputs());
+        controls.add_controls(ia.get_inputs()); //Getting the inputs from the IA
         controls.update_ram(&mut mem);
 
         window.push_matrix(&gpu.screen, &mut texture);
         master.screen(&mut cpu, &mut gpu, &mut timer, &mut controls, &mut mem);
-        //println!("frame");
         gpu.build_bg(&mem);
         gpu.build_window(&mem);
         gpu.build_sprite(&mem);
-        //if config.framerate > 0 {
-       //     frm.delay();
-        //}
     }
 }
