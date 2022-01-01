@@ -245,7 +245,7 @@ impl Ia{
                     }
                 }
                 //manually added the value
-                score = Ia::compute_score(&dummy_mat,0.95,0.1,0.4,0.7);
+                score = Ia::compute_score(&dummy_mat,0.9390522,0.19631356,0.27143267,0.8416236);
                 if score < best_score{
                     best_score = score;
                     best_move = x as i8;
